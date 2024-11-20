@@ -471,7 +471,7 @@ function WindfuryFromShaman()
                         -- 
                         local seconds = math.floor(elapsedTime - (minutes * 60))
                         -- 
-                        if (minutes >= 0) and (minutes <= 9) then
+                        if (hour > 0) and ((minutes >= 0) and (minutes <= 9)) then
                             minutes = "0" .. minutes
                         end
                         -- 
