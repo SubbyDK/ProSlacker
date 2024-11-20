@@ -1,11 +1,26 @@
 -- ############################################################
 -- ######################### Settings #########################
--- ############# But do not change anything here. #############
+-- ############ -- DO NOT CHANGE ANYTHING HERE. -- ############
 -- ############################################################
 
-local AddonName = "EasyMode"
+-- ######################### General. #########################
 
+local AddonName = "EasyMode"
 local Debug = false
+local ErrorMessageFilter = false
+local LogInTime = GetTime()
+
+-- ########################## Druid. ##########################
+
+-- ########################## Hunter ##########################
+
+-- ########################### Mage ###########################
+
+-- ######################### Paladin. #########################
+
+-- ########################## Priest ##########################
+
+-- ########################## Rogue. ##########################
 
 local lastMessageTime_mainHandExpiration = 0
 local lastMessageTime_mainHandCharges = 0
@@ -17,15 +32,31 @@ local lastMessageTime_WindfuryTotem = 0
 local LastSeenWindfuryTime = 0
 local PrintTime = nil
 
-local ErrorMessageFilter = false
-local LogInTime = GetTime()
+-- ########################## Shaman ##########################
 
-local f = CreateFrame("Frame")
+-- ######################### Warlock. #########################
+
+-- ######################### Warrior. #########################
+
 
 -- ############################################################
 -- ######################### Settings #########################
 -- ############# Here you can change all you want #############
 -- ############################################################
+
+-- ######################### General. #########################
+
+-- ########################## Druid. ##########################
+
+-- ########################## Hunter ##########################
+
+-- ########################### Mage ###########################
+
+-- ######################### Paladin. #########################
+
+-- ########################## Priest ##########################
+
+-- ########################## Rogue. ##########################
 
 local intPoisonCharges = 10                     -- Warn when there is less then this amount of poison left.
 local intPoisonTimeLeft = 180                   -- Warn when there is this amount of time left on poison.
@@ -34,6 +65,13 @@ local intWindfuryWaitTime = 180                 -- How many sec do we want to wa
 local strPoisonLowColor = "ff8633"              -- Color for the low count or time on poison.
 local strPoisonMissingColor = "ff3333"          -- Color for the missing poison.
 local strPoisonApplyingColor = "00FF00"         -- Color for applying poison to weapon. 06c51b
+
+-- ########################## Shaman ##########################
+
+-- ######################### Warlock. #########################
+
+-- ######################### Warrior. #########################
+
 
 -- ############################################################
 -- ####################### Error Filter #######################
@@ -73,13 +111,14 @@ local BlackListErrors = {
 }
 
 -- ############################################################
--- #####################  #####################
+-- ############# Create frame and register events #############
 -- ############################################################
 
+local f = CreateFrame("Frame")
 f:RegisterEvent("UI_ERROR_MESSAGE");
 
 -- ############################################################
--- #####################  #####################
+-- ###################### Event handler. ######################
 -- ############################################################
 
 -- f:SetScript("OnEvent", function(self, event, arg1, arg2, arg3)
@@ -109,7 +148,7 @@ f:SetScript("OnEvent", function()
 end)
 
 -- ############################################################
--- ############ OnUpdate there run on every frame. ############
+-- ################# OnUpdate on every frame. #################
 -- ############################################################
 
 f:SetScript("OnUpdate",function()
@@ -132,6 +171,12 @@ function HunterAutoAttack()
 -- /run -- CastSpellByName("Auto Shoot")
 -- /script HunterAutoAttack()
 
+    -- Do we cast fishing and don't fight ?
+    if (FishingPoleEquipped() == true) then
+        CastSpellByName("Fishing");
+        return;
+    end
+
     -- Find a new enermy we can attack.
     if (TargetNewEnemy() == false) then
         return;
@@ -150,67 +195,6 @@ function HunterAutoAttack()
         CastSpellByName("Arcane Shot")
     end
     PetAttack(target)
-
---[[
-
-
-if GetUnitName("target")==nil then
-    TargetNearestEnemy()
-end
-if CheckInteractDistance("target", 3) and (not PlayerFrame.inCombat) then
-    AttackTarget()
-elseif not IsAutoRepeatAction(3) then
-    CastSpellByName("Auto Shot")
-end
-
-
-
-    s = 'Arcane Intellect'
-    f = GetMouseFocus():GetName()
-    t = "party"..string.gsub(f, "PartyMemberFrame", "")
-    if UnitExists(t) then
-        TargetUnit(t)
-        CastSpellByName(s)
-        TargetLastTarget()
-    else
-        CastSpellByName(s)
-    end
-
-
-
-
-
-    s = 'Arcane Intellect'
-    f = GetMouseFocus():GetName()
-    t = "party"..string.gsub(f, "PartyMemberFrame", "")
-    if UnitExists(t) then
-        TargetUnit(t)
-        CastSpellByName(s)
-        TargetLastTarget()
-    else
-        CastSpellByName(s)
-    end
-
-
-
-
-
-
-    pt = 'mouseover'
-    t = 'target'
-    p = 'player'
-    s = 'Arcane Intellect'
-    if UnitExists(pt) and UnitIsFriend(p, pt) then
-        TargetUnit(pt)
-        CastSpellByName(s)
-        TargetLastTarget()
-    elseif UnitExists(t) then
-        CastSpellByName(s)
-    else
-        CastSpellByName(s)
-    end
-    
-]]--
 
 end
 
@@ -269,7 +253,7 @@ function TargetNewEnemy()
         return false
     end
 end
--- /run DEFAULT_CHAT_FRAME:AddMessage(UnitFactionGroup("target"))
+
 -- ############################################################
 -- ###################### Rogue Rotation ######################
 -- ############################################################
@@ -280,7 +264,7 @@ function RogueAttack()
 -- /run -- CastSpellByName("Sinister Strike")
 -- /script RogueAttack()
 
-    -- Do we cast fishing ?
+    -- Do we cast fishing and don't fight ?
     if (FishingPoleEquipped() == true) then
         CastSpellByName("Fishing");
         return;
@@ -409,10 +393,8 @@ function RogueAttack()
 end
 
 -- ############################################################
--- ## Do have someone in the group there is buffing Windfury ##
+-- #### Is someone in the group there is buffing Windfury? ####
 -- ############################################################
-
-local WaitTime = nil
 
 function WindfuryFromShaman()
     -- Set some locals
@@ -630,7 +612,7 @@ end
 function RoguePoison()
 
 -- ########## The macro ##########
--- /run -- /use Instant Poison II
+-- /run -- use Instant Poison IV
 -- /script RoguePoison()
 
     -- Function to apply a specific poison to a given weapon slot
@@ -703,67 +685,9 @@ function PickpocketTarget()
     if UnitExists("target") and CheckInteractDistance("target", 3) then
         -- Pickpocket the target
         CastSpellByName("Pick Pocket");
-
         -- Clear the target
         ClearTarget();
     end
-end
-
--- ############################################################
--- ###################### Warrior attack ######################
--- ############################################################
-
-function WarriorAttack()
-
--- ########## The macro ##########
--- /run -- CastSpellByName("Heroic Strike")
--- /script WarriorAttack()
-
-    if UnitIsDead("target") and UnitExists("target") then
-        ClearTarget();
-    end
-    if GetUnitName("target") == nil then
-        TargetNearestEnemy()
-    end
-
-    -- for i = 1, 120 do
-        -- if not IsCurrentAction(i) then
-            -- CastSpellByName("Attack")
-        -- end
-    -- end
-
-    if (not PlayerFrame.inCombat) then
-        AttackTarget()
-    end
-
-    CastSpellByName("Charge");
-
-    local i, x = 1, 0
-    while UnitDebuff("target",i) do
-        if UnitDebuff("target",i) == "Interface\\Icons\\Ability_Gouge" then
-            x=1
-        end
-        i = i + 1
-    end
-    if x == 0 and UnitHealth("target")/UnitHealthMax("target") > 0.3 then
-        CastSpellByName("Rend");
-    end
-
-    local hasBuff = false
-    for i = 1, 64 do
-        if UnitBuff("player",i) and strfind(UnitBuff("player",i),"Warrior_BattleShout") then
-            hasBuff = true
-            break
-        end
-    end
-    if not hasBuff then
-        CastSpellByName("Battle Shout");
-    end
-
-    CastSpellByName("Bloodthirst");
-    CastSpellByName("Bloodrage");
-    CastSpellByName("Overpower");
-
 end
 
 -- ############################################################
@@ -778,7 +702,8 @@ function FishingPoleEquipped()
 end
 
 -- ############################################################
--- ##############################  ##############################
+-- ###################### Priest healing ######################
+-- ###################### NOT TESTED YET ######################
 -- ############################################################
 
 -- =Inner Focus + Flash Heal + Heal=-
@@ -906,12 +831,8 @@ function PriestHeal()
     end;
 end
 
-
-
-
-
 -- ############################################################
--- ##############################  ##############################
+-- ######### Get a name on what is what button number #########
 -- ############################################################
 
 function reportActionButtons()
@@ -929,16 +850,9 @@ function reportActionButtons()
 	end
 end
 
-
-
-
-
-
-
-
-
-
-
+-- ############################################################
+-- ###################### Warrior attack ######################
+-- ############################################################
 
 function WarriorAttack()
 
