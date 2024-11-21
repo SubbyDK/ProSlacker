@@ -5,7 +5,7 @@
 ## DefaultState: enabled
 ## Notes: "Will maybe do all the fighting for you."
 
-## SavedVariables: 
+## SavedVariables: MobHasNoPocketDB
 ## SavedVariablesPerCharacter: 
 
 EasyMode.lua

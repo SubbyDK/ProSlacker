@@ -132,20 +132,57 @@ f:SetScript("OnEvent", function()
         -- Check to see if the error was that the target have no pockets.
         if (arg1 == SPELL_FAILED_TARGET_NO_POCKETS) then
             -- Is the table created ?
-            if type(MobHasNoPocket) == "table" then
-                DEFAULT_CHAT_FRAME:AddMessage("Tabel lavet.");
-            else
-                DEFAULT_CHAT_FRAME:AddMessage("Ingen tabel.");
-                MobHasNoPocket = {}
+            if (not type(MobHasNoPocketDB) == "table") then
+                MobHasNoPocketDB = {}
             end
             -- Insert to table that the mob don't have pockets.
-            -- MobHasNoPocket[ERR_INVALID_TARGET] = true
+            local MobInfo = GetMobInfo()
+            -- Did we get the mob info ?
+            if (MobInfo ~= false) then
+                -- Check if we already have the mob in the DB.
+                if (not MobHasNoPocketDB[MobInfo]) then
+                    -- Mob was not there, so insert.
+                    MobHasNoPocketDB[MobInfo] = true
+                end
+            end
         end
+        -- If the error message is not in the black list, then we forward it.
         if (not BlackListErrors[errorName]) then
             UIErrorsFrame:AddMessage(errorName, 1, .1, .1)
         end
     end
 end)
+
+-- ############################################################
+-- ###################### Get the mob ID ######################
+-- ############################################################
+
+function GetMobInfo()
+    -- As it's not possible to get the ID of a mob in 1.12 we need to do it in another way.
+    -- We take name and level of the mob, and the zone we are in, that is as close as we can get to not mix mobs up.
+    local name = UnitName("target")
+    local level = UnitLevel("target")
+    local zoneName = GetRealZoneText()
+    -- Did we find anything ?
+    if (name) and (level) and (zoneName) then
+        return name .. ":" .. level .. ":" .. zoneName
+    else
+        Debug = true
+        if (Debug == true) then
+            if (not name) then
+                DEFAULT_CHAT_FRAME:AddMessage("Missing name of the mob.");
+            end
+            if (not level) then
+                DEFAULT_CHAT_FRAME:AddMessage("Missing level of the mob.");
+            end
+            if (not zoneName) then
+                DEFAULT_CHAT_FRAME:AddMessage("Missing the zone we are in.");
+            end
+        end
+        Debug = false
+        return false
+    end
+end
 
 -- ############################################################
 -- ################# OnUpdate on every frame. #################
@@ -278,8 +315,10 @@ function RogueAttack()
     -- 
     local icon, name, StealthActive, castable = GetShapeshiftFormInfo(1);
     if (StealthActive == 1) then
+        -- Get the mob info.
+        local MobInfo = GetMobInfo()
         -- 1 = Compare Achievements, 28 yards - 2 = Trade, 8 yards - 3 = Duel, 7 yards - 4 = Follow, 28 yards - 5 = Pet-battle Duel, 7 yards
-        if (CheckInteractDistance("target", 3)) and (strPickPocketDone ~= true) and (GetUnitName("target") ~= nil) then
+        if (CheckInteractDistance("target", 3)) and (strPickPocketDone ~= true) and (GetUnitName("target") ~= nil) and (not MobHasNoPocketDB[MobInfo]) then
             CastSpellByName("Pick Pocket");
             strPickPocketDone = true
         else
@@ -678,16 +717,15 @@ function PickpocketTarget()
 -- /run -- CastSpellByName("Pick Pocket")
 -- /script PickpocketTarget()
 
-    -- Target a new enemy
+    -- Target a new enemy, no need to check anything as we want a new target everytime we activate function.
     TargetNearestEnemy();
 
     -- Check if the target is valid and within range
-    if UnitExists("target") and CheckInteractDistance("target", 3) then
+    if (GetUnitName("target") ~= nil) and CheckInteractDistance("target", 3) then
         -- Pickpocket the target
         CastSpellByName("Pick Pocket");
-        -- Clear the target
-        ClearTarget();
     end
+
 end
 
 -- ############################################################
@@ -852,7 +890,7 @@ end
 
 -- ############################################################
 -- ############################################################
--- ####################### For Heraska. #######################
+-- ######################## For Hraska ########################
 -- ############################################################
 -- ############################################################
 
