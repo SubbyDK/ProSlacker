@@ -6,6 +6,6 @@
 ## Notes: "Will maybe do all the fighting for you."
 
 ## SavedVariables: MobHasNoPocketDB
-## SavedVariablesPerCharacter: 
+## SavedVariablesPerCharacter: ShoppingDB
 
 EasyMode.lua

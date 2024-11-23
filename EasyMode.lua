@@ -116,6 +116,8 @@ local BlackListErrors = {
 
 local f = CreateFrame("Frame")
 f:RegisterEvent("UI_ERROR_MESSAGE");
+f:RegisterEvent("MERCHANT_SHOW");
+f:RegisterEvent("MERCHANT_CLOSED");
 
 -- ############################################################
 -- ###################### Event handler. ######################
@@ -150,8 +152,157 @@ f:SetScript("OnEvent", function()
         if (not BlackListErrors[errorName]) then
             UIErrorsFrame:AddMessage(errorName, 1, .1, .1)
         end
+    -- Did we open a vendor window ?
+    elseif (event == "MERCHANT_SHOW") then
+        BuyItemFromVendor()
+    -- Did we close a vendor window ?
+    elseif (event == "MERCHANT_CLOSED") then
     end
 end)
+
+-- ############################################################
+-- ################## Auto shop from vendor. ##################
+-- ############################################################
+
+function BuyItemFromVendor()
+    -- Do we have a shopping table ?
+    --if (not type(ShoppingDB) == "table") then
+        ShoppingDB = {
+            ["Flash Powder"] = 20,
+            ["Meat"] = 20,
+        }
+    --end
+
+
+    for itemName, desiredQuantity in pairs(ShoppingDB) do
+        -- Check if you have enough of the item in your inventory.
+        local ItemCount = 0
+        for bag = 4, 0, -1 do
+            for slotNum = GetContainerNumSlots(bag), 1, -1 do
+                local itemLink = GetContainerItemLink(bag, slotNum)
+                if (itemLink) and (string.find(itemLink, itemName)) then
+                    local _, count = GetContainerItemInfo(bag, slotNum)
+                    ItemCount = ItemCount + count
+                end
+            end
+        end
+        -- Is what we have in the bags less then what we want to have ?
+        if (ItemCount < desiredQuantity) then
+            local quantityToBuy = (desiredQuantity - ItemCount)
+            -- 
+            for i = 1, GetMerchantNumItems() do
+                local itemLink = GetMerchantItemLink(i)
+                if (itemLink) and (string.find(string.lower(itemLink), string.lower(itemName))) then
+                local vendorItemName, IconTexture, BatchPrice, BatchQuantity, vendorItemCount, isUsable, extendedCost = GetMerchantItemInfo(i)
+                if vendorItemName then
+                    DEFAULT_CHAT_FRAME:AddMessage("vendorItemName = " .. vendorItemName)
+                else
+                    DEFAULT_CHAT_FRAME:AddMessage("No vendorItemName")
+                end
+                if IconTexture then
+                    DEFAULT_CHAT_FRAME:AddMessage("IconTexture = " .. IconTexture)
+                else
+                    DEFAULT_CHAT_FRAME:AddMessage("No IconTexture")
+                end
+                if BatchPrice then
+                    DEFAULT_CHAT_FRAME:AddMessage("BatchPrice = " .. BatchPrice .. " copper")
+                else
+                    DEFAULT_CHAT_FRAME:AddMessage("No BatchPrice")
+                end
+                if BatchQuantity then
+                    DEFAULT_CHAT_FRAME:AddMessage("BatchQuantity = " .. BatchQuantity)
+                else
+                    DEFAULT_CHAT_FRAME:AddMessage("No BatchQuantity")
+                end
+                if vendorItemCount then
+                    DEFAULT_CHAT_FRAME:AddMessage("vendorItemCount = " .. vendorItemCount)
+                else
+                    DEFAULT_CHAT_FRAME:AddMessage("No vendorItemCount")
+                end
+                if isUsable then
+                    DEFAULT_CHAT_FRAME:AddMessage("isUsable = " .. isUsable)
+                else
+                    DEFAULT_CHAT_FRAME:AddMessage("No isUsable")
+                end
+                if extendedCost then
+                    DEFAULT_CHAT_FRAME:AddMessage("extendedCost = " .. extendedCost)
+                else
+                    DEFAULT_CHAT_FRAME:AddMessage("No extendedCost")
+                end
+                -- local vendorItemName, vendorItemCount = GetMerchantItemInfo(i)
+                -- if (vendorItemName) then
+                    -- DEFAULT_CHAT_FRAME:AddMessage("No name")
+                    -- return
+                -- end
+                -- if (vendorItemCount) then
+                    -- DEFAULT_CHAT_FRAME:AddMessage("No count")
+                    -- return
+                -- end
+                    --if (tonumber(vendorItemCount) >= tonumber(quantityToBuy)) then
+                        -- Buy the required quantity
+                        for j = 1, quantityToBuy do
+                            BuyMerchantItem(i)
+                        end
+                        -- 
+                        DEFAULT_CHAT_FRAME:AddMessage(AddonName .. ": Buying " .. ((desiredQuantity - ItemCount) * BatchQuantity) .. " x " .. itemName .. ".")
+                    --end
+                end
+            end
+        end
+    end
+
+
+--[[
+        local currentQuantity = GetItemCount(itemName)
+        local quantityToBuy = desiredQuantity - currentQuantity
+
+        if quantityToBuy > 0 then
+            -- Iterate through the vendor's items and buy the missing quantity
+            for i = 1, GetMerchantNumItems() do
+                local vendorItemName, vendorItemCount = GetMerchantItemInfo(i)
+                if vendorItemName == itemName and vendorItemCount >= quantityToBuy then
+                    -- Buy the required quantity
+                    for j = 1, quantityToBuy do
+                        BuyMerchantItem(i)
+                    end
+                    break
+                end
+            end
+        end
+    end
+--]]
+
+
+    -- Loop through our bags to count what we need from ShoppingDB
+
+        -- If we don't have the amount we want, then loop through the vendor to see if he have it.
+
+            -- If the vendor have the itme, then buy it so we get up to the amount we have in ShoppingDB.
+
+    -- local vendorItems = GetMerchantNumItems()
+
+    -- for i = 1, vendorItems do
+        -- local itemLink = GetMerchantItemLink(i)
+        -- if itemLink and string.find(itemLink, itemName) then
+            -- local itemPrice = GetMerchantItemCost(i)
+            -- local playerMoney = GetPlayerMoney()
+
+            -- if playerMoney >= itemPrice * itemCount then
+                -- for j = 1, itemCount do
+                    -- BuyMerchantItem(i)
+                -- end
+                -- DEFAULT_CHAT_FRAME:AddMessage("Purchased " .. itemCount .. " " .. itemName)
+                -- return true
+            -- else
+                -- DEFAULT_CHAT_FRAME:AddMessage("Not enough money to buy " .. itemName)
+                -- return false
+            -- end
+        -- end
+    -- end
+
+    -- DEFAULT_CHAT_FRAME:AddMessage("Item not found: " .. itemName)
+    -- return false
+end
 
 -- ############################################################
 -- ###################### Get the mob ID ######################
