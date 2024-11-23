@@ -5,7 +5,7 @@
 
 -- ######################### General. #########################
 
-local AddonName = "EasyMode"
+local AddonName = "ProSlacker"
 local Debug = false
 local ErrorMessageFilter = false
 local LogInTime = GetTime()
@@ -71,6 +71,43 @@ local strPoisonApplyingColor = "00FF00"         -- Color for applying poison to 
 -- ######################### Warlock. #########################
 
 -- ######################### Warrior. #########################
+
+
+-- ############################################################
+-- ###################### Slash commands ######################
+-- ############################################################
+
+SLASH_RELOAD1 = '/rl'
+function SlashCmdList.RELOAD(msg, editbox)
+  ReloadUI()
+end
+
+SLASH_EASYMODE1, SLASH_EASYMODE2 = '/ps', '/proslacker'
+function SlashCmdList.EASYMODE(msg)
+    if (msg == nil) or (msg == "") then
+        DEFAULT_CHAT_FRAME:AddMessage("Du skrev ikke noget.")
+    else
+        DEFAULT_CHAT_FRAME:AddMessage("Du skrev: " .. msg)
+    end
+end
+
+SLASH_ADDITEM1, SLASH_ADDITEM2 = '/additem', '/ai'
+function SlashCmdList.ADDITEM(msg)
+    local itemName, itemCount = string.match(msg, "(%w+) (%d+)")
+
+    -- Do we have a shopping table ?
+    if (not type(ShoppingDB) == "table") then
+        ShoppingDB = {}
+    end
+
+    if itemName and itemCount then
+        local desiredQuantity = tonumber(itemCount)
+        ShoppingDB[itemName] = desiredQuantity
+        DEFAULT_CHAT_FRAME:AddMessage("Added " .. desiredQuantity .. " " .. itemName .. " to the shopping list.")
+    else
+        DEFAULT_CHAT_FRAME:AddMessage("Invalid input. Please use the format: /additem <item name> <quantity>")
+    end
+end
 
 
 -- ############################################################
@@ -166,13 +203,9 @@ end)
 
 function BuyItemFromVendor()
     -- Do we have a shopping table ?
-    --if (not type(ShoppingDB) == "table") then
-        ShoppingDB = {
-            ["Flash Powder"] = 20,
-            ["Meat"] = 20,
-        }
-    --end
-
+    if (not type(ShoppingDB) == "table") then
+        ShoppingDB = {}
+    end
 
     for itemName, desiredQuantity in pairs(ShoppingDB) do
         -- Check if you have enough of the item in your inventory.
@@ -193,115 +226,36 @@ function BuyItemFromVendor()
             for i = 1, GetMerchantNumItems() do
                 local itemLink = GetMerchantItemLink(i)
                 if (itemLink) and (string.find(string.lower(itemLink), string.lower(itemName))) then
-                local vendorItemName, IconTexture, BatchPrice, BatchQuantity, vendorItemCount, isUsable, extendedCost = GetMerchantItemInfo(i)
-                if vendorItemName then
-                    DEFAULT_CHAT_FRAME:AddMessage("vendorItemName = " .. vendorItemName)
-                else
-                    DEFAULT_CHAT_FRAME:AddMessage("No vendorItemName")
-                end
-                if IconTexture then
-                    DEFAULT_CHAT_FRAME:AddMessage("IconTexture = " .. IconTexture)
-                else
-                    DEFAULT_CHAT_FRAME:AddMessage("No IconTexture")
-                end
-                if BatchPrice then
-                    DEFAULT_CHAT_FRAME:AddMessage("BatchPrice = " .. BatchPrice .. " copper")
-                else
-                    DEFAULT_CHAT_FRAME:AddMessage("No BatchPrice")
-                end
-                if BatchQuantity then
-                    DEFAULT_CHAT_FRAME:AddMessage("BatchQuantity = " .. BatchQuantity)
-                else
-                    DEFAULT_CHAT_FRAME:AddMessage("No BatchQuantity")
-                end
-                if vendorItemCount then
-                    DEFAULT_CHAT_FRAME:AddMessage("vendorItemCount = " .. vendorItemCount)
-                else
-                    DEFAULT_CHAT_FRAME:AddMessage("No vendorItemCount")
-                end
-                if isUsable then
-                    DEFAULT_CHAT_FRAME:AddMessage("isUsable = " .. isUsable)
-                else
-                    DEFAULT_CHAT_FRAME:AddMessage("No isUsable")
-                end
-                if extendedCost then
-                    DEFAULT_CHAT_FRAME:AddMessage("extendedCost = " .. extendedCost)
-                else
-                    DEFAULT_CHAT_FRAME:AddMessage("No extendedCost")
-                end
-                -- local vendorItemName, vendorItemCount = GetMerchantItemInfo(i)
-                -- if (vendorItemName) then
-                    -- DEFAULT_CHAT_FRAME:AddMessage("No name")
-                    -- return
-                -- end
-                -- if (vendorItemCount) then
-                    -- DEFAULT_CHAT_FRAME:AddMessage("No count")
-                    -- return
-                -- end
-                    --if (tonumber(vendorItemCount) >= tonumber(quantityToBuy)) then
-                        -- Buy the required quantity
-                        for j = 1, quantityToBuy do
-                            BuyMerchantItem(i)
+                    local vendorItemName, IconTexture, BatchPrice, BatchQuantity, vendorItemCount, isUsable, extendedCost = GetMerchantItemInfo(i)
+                    -- Make sure we don't buy for example 3 x 5 of something if we only want 3
+                    -- If the stack is bigger then what we want, then we round down.
+                    if (BatchQuantity > quantityToBuy) then
+                        quantityToBuy = math.floor((BatchQuantity / quantityToBuy))
+                    end
+                    -- Do we have enough money to buy it ?
+                    local playerMoney = GetMoney()
+                    if (playerMoney > (BatchPrice * quantityToBuy)) then
+                        -- Check that the vendor have the amount we want.
+                        if (tonumber(vendorItemCount) >= tonumber(quantityToBuy)) or (tonumber(vendorItemCount) == -1) then
+                            -- Buy the required quantity
+                            for j = 1, quantityToBuy do
+                                BuyMerchantItem(i)
+                            end
+                        -- Vendor don't have the amount we want, so we buy what vendor have.
+                        else
+                            -- Buy what we can get.
+                            for j = 1, vendorItemCount do
+                                BuyMerchantItem(i)
+                            end
                         end
                         -- 
                         DEFAULT_CHAT_FRAME:AddMessage(AddonName .. ": Buying " .. ((desiredQuantity - ItemCount) * BatchQuantity) .. " x " .. itemName .. ".")
-                    --end
-                end
-            end
-        end
-    end
-
-
---[[
-        local currentQuantity = GetItemCount(itemName)
-        local quantityToBuy = desiredQuantity - currentQuantity
-
-        if quantityToBuy > 0 then
-            -- Iterate through the vendor's items and buy the missing quantity
-            for i = 1, GetMerchantNumItems() do
-                local vendorItemName, vendorItemCount = GetMerchantItemInfo(i)
-                if vendorItemName == itemName and vendorItemCount >= quantityToBuy then
-                    -- Buy the required quantity
-                    for j = 1, quantityToBuy do
-                        BuyMerchantItem(i)
                     end
-                    break
                 end
             end
         end
     end
---]]
 
-
-    -- Loop through our bags to count what we need from ShoppingDB
-
-        -- If we don't have the amount we want, then loop through the vendor to see if he have it.
-
-            -- If the vendor have the itme, then buy it so we get up to the amount we have in ShoppingDB.
-
-    -- local vendorItems = GetMerchantNumItems()
-
-    -- for i = 1, vendorItems do
-        -- local itemLink = GetMerchantItemLink(i)
-        -- if itemLink and string.find(itemLink, itemName) then
-            -- local itemPrice = GetMerchantItemCost(i)
-            -- local playerMoney = GetPlayerMoney()
-
-            -- if playerMoney >= itemPrice * itemCount then
-                -- for j = 1, itemCount do
-                    -- BuyMerchantItem(i)
-                -- end
-                -- DEFAULT_CHAT_FRAME:AddMessage("Purchased " .. itemCount .. " " .. itemName)
-                -- return true
-            -- else
-                -- DEFAULT_CHAT_FRAME:AddMessage("Not enough money to buy " .. itemName)
-                -- return false
-            -- end
-        -- end
-    -- end
-
-    -- DEFAULT_CHAT_FRAME:AddMessage("Item not found: " .. itemName)
-    -- return false
 end
 
 -- ############################################################
@@ -779,19 +733,6 @@ function CheckIfSpellIsKnown(spellName, rank)
         DEFAULT_CHAT_FRAME:AddMessage(SearchSpell .. " (" .. SearchRank .. ") was not found in the spellbook.")
     end
     return false
-end
-
--- ############################################################
--- ###################### Slash commands ######################
--- ############################################################
-
-SLASH_EASYMODE1, SLASH_EASYMODE2 = "/easymode", "/em"
-function SlashCmdList.EASYMODE(msg)
-    if (msg == nil) or (msg == "") then
-        DEFAULT_CHAT_FRAME:AddMessage("Du skrev ikke noget.")
-    else
-        DEFAULT_CHAT_FRAME:AddMessage("Du skrev: " .. msg)
-    end
 end
 
 -- ############################################################
