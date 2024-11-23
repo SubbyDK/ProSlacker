@@ -729,6 +729,70 @@ function PickpocketTarget()
 end
 
 -- ############################################################
+-- ###################### Paladin attack ######################
+-- ############################################################
+
+function PaladinAttack()
+
+-- ########## The macro ##########
+-- /run -- CastSpellByName("Attack")
+-- /script PaladinAttack()
+
+    -- Do we cast fishing and don't fight ?
+    if (FishingPoleEquipped() == true) then
+        CastSpellByName("Fishing");
+        return;
+    end
+
+    -- Find a new enermy we can attack.
+    if (TargetNewEnemy() == false) then
+        return;
+    end
+
+    -- 
+    --for i = 1, 120 do
+        if not IsCurrentAction(4) then
+            CastSpellByName("Attack")
+        end
+    --end
+
+    -- Locals
+    local HasSealBuff = false
+    local HasMightBuff = false
+    -- Loop through own buff.
+    for i = 1, 64 do
+        if UnitBuff("player",i) then
+            -- DEFAULT_CHAT_FRAME:AddMessage(UnitBuff("player",i)) -- Keep this line here for when we have to change check for buff.
+        end
+        --Do we have Seal of Righteousness up ?
+        if UnitBuff("player",i) and string.find(UnitBuff("player",i),"Interface\\Icons\\Ability_ThunderBolt") then
+            -- Vi fandt Battle Shout.
+            HasSealBuff = true
+        end
+        --Do we have Blessing of Might up ?
+        if UnitBuff("player",i) and string.find(UnitBuff("player",i),"Interface\\Icons\\Spell_Holy_FistOfJustice") then
+            -- Vi fandt Blessing of Might
+            HasMightBuff = true
+        end
+    end
+    -- We did not find Seal of Righteousness.
+    if (not HasSealBuff) then
+        -- Cast Seal of Righteousness
+        CastSpellByName("Seal of Righteousness");
+    end
+    -- We did not find Blessing of Might.
+    if (not HasMightBuff) then
+        -- Cast Seal of Righteousness
+        CastSpellByName("Blessing of Might");
+    end
+
+    -- 
+    CastSpellByName("Judgement");
+    CastSpellByName("Holy Strike");
+
+end
+
+-- ############################################################
 -- ################# Is Fishing Pole Equipped #################
 -- ############################################################
 
