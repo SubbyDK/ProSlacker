@@ -59,12 +59,12 @@ local PrintTime = nil
 -- ########################## Rogue. ##########################
 
 local intPoisonCharges = 10                     -- Warn when there is less then this amount of poison left.
-local intPoisonTimeLeft = 180                   -- Warn when there is this amount of time left on poison.
+local intPoisonTimeLeft = 180                   -- Warn when there is this amount of time (in sec) left on poison.
 local intPoisonRemainder = 30                   -- How often we want the warning. (in sec)
 local intWindfuryWaitTime = 180                 -- How many sec do we want to wait on the Windfury buff.
 local strPoisonLowColor = "ff8633"              -- Color for the low count or time on poison.
 local strPoisonMissingColor = "ff3333"          -- Color for the missing poison.
-local strPoisonApplyingColor = "00FF00"         -- Color for applying poison to weapon. 06c51b
+local strPoisonApplyingColor = "00FF00"         -- Color for applying poison to weapon.
 
 -- ########################## Shaman ##########################
 
@@ -103,9 +103,9 @@ function SlashCmdList.ADDITEM(msg)
     if itemName and itemCount then
         local desiredQuantity = tonumber(itemCount)
         ShoppingDB[itemName] = desiredQuantity
-        DEFAULT_CHAT_FRAME:AddMessage("Added " .. desiredQuantity .. " " .. itemName .. " to the shopping list.")
+        DEFAULT_CHAT_FRAME:AddMessage("Added " .. desiredQuantity .. " x " .. itemName .. " to the auto shopping list.")
     else
-        DEFAULT_CHAT_FRAME:AddMessage("Invalid input. Please use the format: /additem <item name> <quantity>")
+        DEFAULT_CHAT_FRAME:AddMessage("Invalid input. Please use the format: /additem <quantity> <item name>")
     end
 end
 
