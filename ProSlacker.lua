@@ -1,26 +1,26 @@
--- ############################################################
--- ######################### Settings #########################
--- ############ -- DO NOT CHANGE ANYTHING HERE. -- ############
--- ############################################################
+-- ====================================================================================================
+-- =                                             Settings                                             =
+-- =                                -- DO NOT CHANGE ANYTHING HERE. --                                =
+-- ====================================================================================================
 
--- ######################### General. #########################
+-- ============================================= General. =============================================
 
 local AddonName = "ProSlacker"
 local Debug = false
 local ErrorMessageFilter = false
 local LogInTime = GetTime()
 
--- ########################## Druid. ##########################
+-- ============================================== Druid. ==============================================
 
--- ########################## Hunter ##########################
+-- ============================================== Hunter ==============================================
 
--- ########################### Mage ###########################
+-- =============================================== Mage ===============================================
 
--- ######################### Paladin. #########################
+-- ============================================= Paladin. =============================================
 
--- ########################## Priest ##########################
+-- ============================================== Priest ==============================================
 
--- ########################## Rogue. ##########################
+-- ============================================== Rogue. ==============================================
 
 local lastMessageTime_mainHandExpiration = 0
 local lastMessageTime_mainHandCharges = 0
@@ -32,31 +32,31 @@ local lastMessageTime_WindfuryTotem = 0
 local LastSeenWindfuryTime = 0
 local PrintTime = nil
 
--- ########################## Shaman ##########################
+-- ============================================== Shaman ==============================================
 
--- ######################### Warlock. #########################
+-- ============================================= Warlock. =============================================
 
--- ######################### Warrior. #########################
+-- ============================================= Warrior. =============================================
 
 
--- ############################################################
--- ######################### Settings #########################
--- ############# Here you can change all you want #############
--- ############################################################
+-- ====================================================================================================
+-- =                                             Settings                                             =
+-- =                                 Here you can change all you want                                 =
+-- ====================================================================================================
 
--- ######################### General. #########################
+-- ============================================= General. =============================================
 
--- ########################## Druid. ##########################
+-- ============================================== Druid. ==============================================
 
--- ########################## Hunter ##########################
+-- ============================================== Hunter ==============================================
 
--- ########################### Mage ###########################
+-- =============================================== Mage ===============================================
 
--- ######################### Paladin. #########################
+-- ============================================= Paladin. =============================================
 
--- ########################## Priest ##########################
+-- ============================================== Priest ==============================================
 
--- ########################## Rogue. ##########################
+-- ============================================== Rogue. ==============================================
 
 local intPoisonCharges = 10                     -- Warn when there is less then this amount of poison left.
 local intPoisonTimeLeft = 180                   -- Warn when there is this amount of time (in sec) left on poison.
@@ -66,53 +66,207 @@ local strPoisonLowColor = "ff8633"              -- Color for the low count or ti
 local strPoisonMissingColor = "ff3333"          -- Color for the missing poison.
 local strPoisonApplyingColor = "00FF00"         -- Color for applying poison to weapon.
 
--- ########################## Shaman ##########################
+-- ============================================== Shaman ==============================================
 
--- ######################### Warlock. #########################
+-- ============================================= Warlock. =============================================
 
--- ######################### Warrior. #########################
+-- ============================================= Warrior. =============================================
 
+-- ====================================================================================================
+-- =                                          Slash commands                                          =
+-- ====================================================================================================
 
--- ############################################################
--- ###################### Slash commands ######################
--- ############################################################
-
-SLASH_RELOAD1 = '/rl'
-function SlashCmdList.RELOAD(msg, editbox)
+-- Make it easy to reload the game by using /rl or /reload
+SLASH_RELOAD1, SLASH_RELOAD2 = '/rl', '/reload'
+function SlashCmdList.RELOAD()
   ReloadUI()
 end
 
-SLASH_EASYMODE1, SLASH_EASYMODE2 = '/ps', '/proslacker'
-function SlashCmdList.EASYMODE(msg)
+-- ====================================================================================================
+
+SLASH_PROSLACKER1, SLASH_PROSLACKER2 = '/ps', '/proslacker'
+function SlashCmdList.PROSLACKER(msg)
+
+-- ====================================================================================================
+
+    -- Was it a empty slash command ?
     if (msg == nil) or (msg == "") then
-        DEFAULT_CHAT_FRAME:AddMessage("Du skrev ikke noget.")
+        DEFAULT_CHAT_FRAME:AddMessage("Missing commands.")
+        DEFAULT_CHAT_FRAME:AddMessage("/ProSlacker Help for more info.")
+
+-- ====================================================================================================
+
+    -- Add what we want to auto buy to ShoppingDB.
+    elseif (string.sub(string.upper(msg), 1, 3) == "BUY") then
+
+        -- Is the ShoppingDB created, if not we create it.
+        if not ShoppingDB then
+            ShoppingDB = {}
+        end
+
+        -- Some locals
+        local FirstSpaceIndex = nil
+        local NumberSpaceIndex = nil
+        local OutputString = nil
+        local itemName = nil
+        local intQuantity = nil
+
+        -- Remove any [ and ] in the string so we can add by shift clicking.
+        msg = string.gsub(msg, "[[]", "");
+        msg = string.gsub(msg, "[]]", "");
+
+        -- Remove buy from the input.
+        FirstSpaceIndex = string.find(msg, " ");
+        -- Did we find a space ?
+        if (FirstSpaceIndex) then
+            -- Make a new string with out the "buy"
+            OutputString = string.sub(msg, FirstSpaceIndex + 1);
+        end
+
+        -- Find the amount we need to put in, just before first space.
+        NumberSpaceIndex = string.find(OutputString, " ");
+        -- Did we find a space ?
+        if (NumberSpaceIndex) then
+            -- Cut the number out of the string.
+            intQuantity = string.sub(OutputString, 1, (NumberSpaceIndex) - 1);
+            -- Was is a number we ended up with ?
+            if (tonumber(intQuantity)) then
+                -- Make a new string with no number.
+                OutputString = string.sub(OutputString, (NumberSpaceIndex + 1));
+            end
+        end
+
+        -- Did we find anything left in the string ?
+        if (OutputString) then
+            -- Is it a link people have been using to get the name ?
+            -- To find out we look for color codes as they are always in links
+            if (string.find(OutputString, "|cff")) then
+                -- 
+                local start, finish = string.find(OutputString, "|h");
+                if start and finish then
+                    start = finish + 1
+                    finish = string.find(OutputString, "|h", start);
+                    if finish then
+                        itemName = string.sub(OutputString, start, finish - 1);
+                    end
+                end
+            -- We did not find any color code, so must be text and not a link.
+            else
+                itemName = OutputString
+            end
+        end
+        -- Do we have a amount and a item name ?
+        if (intQuantity) and (itemName) then
+            -- Add to ShoppingDB.
+            ShoppingDB[string.lower(itemName)] = tonumber(intQuantity);
+            -- Inform that we added.
+            DEFAULT_CHAT_FRAME:AddMessage("Added " .. intQuantity .. " x " .. itemName .. " to the auto shopping list.");
+        else
+            DEFAULT_CHAT_FRAME:AddMessage("Invalid input. Please use the format: /ps <quantity> <item name>");
+        end
+
+-- ====================================================================================================
+
+    elseif (string.sub(string.upper(msg), 1, 7) == "STOPBUY") then
+
+        -- Is the ShoppingDB created, if not we create it.
+        if not ShoppingDB then
+            ShoppingDB = {}
+        end
+
+        -- Some locals
+        local FirstSpaceIndex = nil
+        local OutputString = nil
+        local itemName = nil
+
+        -- Remove any [ and ] in the string so we can remove by shift clicking.
+        msg = string.gsub(msg, "[[]", "");
+        msg = string.gsub(msg, "[]]", "");
+
+        -- Remove "stopbuy" from the input.
+        FirstSpaceIndex = string.find(msg, " ");
+        -- Did we find a space ?
+        if (FirstSpaceIndex) then
+            -- Make a new string with out the "stopbuy"
+            OutputString = string.sub(msg, FirstSpaceIndex + 1);
+        end
+
+        -- Find the name of what we want to remove.
+        if (OutputString) then
+            -- Is it a link people have been using to get the name ?
+            -- Too find out we look for color codes as they are always in links
+            if (string.find(OutputString, "|cff")) then
+                -- 
+                local start, finish = string.find(OutputString, "|h");
+                if start and finish then
+                    start = finish + 1
+                    finish = string.find(OutputString, "|h", start);
+                    if finish then
+                        itemName = string.sub(OutputString, start, finish - 1);
+                    end
+                end
+            -- We did not find any color code, so must be text and not a link.
+            else
+                itemName = OutputString
+            end
+        end
+
+        -- Did we get a name ?
+        if (itemName) then
+            -- Is the item already in the ShoppingDB ?
+            if (ShoppingDB[string.lower(itemName)]) then
+                ShoppingDB[string.lower(itemName)] = nil
+                DEFAULT_CHAT_FRAME:AddMessage("Removed " .. itemName .. " from the shopping list.");
+            else
+                DEFAULT_CHAT_FRAME:AddMessage("The item " .. itemName .. " was not in the shopping list.");
+            end
+        else
+            DEFAULT_CHAT_FRAME:AddMessage("Invalid input. Please use the format: /ps stopbuy <item name>");
+        end
+
+-- ====================================================================================================
+
+    elseif (string.sub(string.upper(msg), 1, 4) == "INFO") then
+        -- Get some info from the TOC file
+        local intVersion = GetAddOnMetadata(AddonName, "Version");
+        local strAuthor = GetAddOnMetadata(AddonName, "Author");
+        -- Write the info about the addon.
+        DEFAULT_CHAT_FRAME:AddMessage("|cff3333ff" .. "-- ADDON INFORMATION --" .. "|r");
+        DEFAULT_CHAT_FRAME:AddMessage("|cFF06c51b" .. AddonName .. " - Version " .. intVersion .. "|r");
+        DEFAULT_CHAT_FRAME:AddMessage("|cFF06c51b" .. "Author: " .. strAuthor .. "|r");
+        DEFAULT_CHAT_FRAME:AddMessage("|cFF06c51b" .. "Server: Nordanaar (Turtle WoW)" .. "|r");
+
+-- ====================================================================================================
+
+    -- Disable or enable debigging.
+    elseif (string.sub(string.upper(msg), 1, 5) == "DEBUG") then
+        if (Debug == true) then
+            Debug = false
+            DEFAULT_CHAT_FRAME:AddMessage("Debugging: |cFFFF0000disabled|r.");
+        elseif (Debug == false) then
+            Debug = true
+            DEFAULT_CHAT_FRAME:AddMessage("Debugging: |cFF00FF00enabled|r.");
+        end
+
+-- ====================================================================================================
+
+    -- Give some help with the slash sommands.
+    elseif (string.sub(string.upper(msg), 1, 4) == "HELP") then
+        DEFAULT_CHAT_FRAME:AddMessage("Available commands:");
+        DEFAULT_CHAT_FRAME:AddMessage("Both /proslacker or /ps can be used.");
+        DEFAULT_CHAT_FRAME:AddMessage("/ps buy - Add items to the auto shopping list.");
+        DEFAULT_CHAT_FRAME:AddMessage("/ps stopbuy - Remove items from the auto shopping list.");
+        DEFAULT_CHAT_FRAME:AddMessage("/ps info - Display addon information.");
+        DEFAULT_CHAT_FRAME:AddMessage("/ps debug - Enable or disable debugging.");
+        DEFAULT_CHAT_FRAME:AddMessage("/ps help - Show this help message.");
     else
-        DEFAULT_CHAT_FRAME:AddMessage("Du skrev: " .. msg)
+        DEFAULT_CHAT_FRAME:AddMessage("Wrong slash command, use /ProSlacker Help for more help.");
     end
 end
 
-SLASH_ADDITEM1, SLASH_ADDITEM2 = '/additem', '/ai'
-function SlashCmdList.ADDITEM(msg)
-    local itemName, itemCount = string.match(msg, "(%w+) (%d+)")
-
-    -- Do we have a shopping table ?
-    if (not type(ShoppingDB) == "table") then
-        ShoppingDB = {}
-    end
-
-    if itemName and itemCount then
-        local desiredQuantity = tonumber(itemCount)
-        ShoppingDB[itemName] = desiredQuantity
-        DEFAULT_CHAT_FRAME:AddMessage("Added " .. desiredQuantity .. " x " .. itemName .. " to the auto shopping list.")
-    else
-        DEFAULT_CHAT_FRAME:AddMessage("Invalid input. Please use the format: /additem <quantity> <item name>")
-    end
-end
-
-
--- ############################################################
--- ####################### Error Filter #######################
--- ############################################################
+-- ====================================================================================================
+-- =                                           Error Filter                                           =
+-- ====================================================================================================
 
 -- More info here:
 -- https://wowpedia.fandom.com/wiki/UI_ERROR_MESSAGE
@@ -147,18 +301,18 @@ local BlackListErrors = {
   [SPELL_FAILED_NOT_ON_TAXI] = true,            -- You are in flight
 }
 
--- ############################################################
--- ############# Create frame and register events #############
--- ############################################################
+-- ====================================================================================================
+-- =                                 Create frame and register events                                 =
+-- ====================================================================================================
 
 local f = CreateFrame("Frame")
 f:RegisterEvent("UI_ERROR_MESSAGE");
 f:RegisterEvent("MERCHANT_SHOW");
 f:RegisterEvent("MERCHANT_CLOSED");
 
--- ############################################################
--- ###################### Event handler. ######################
--- ############################################################
+-- ====================================================================================================
+-- =                                          Event handler.                                          =
+-- ====================================================================================================
 
 -- f:SetScript("OnEvent", function(self, event, arg1, arg2, arg3)
 f:SetScript("OnEvent", function()
@@ -197,9 +351,9 @@ f:SetScript("OnEvent", function()
     end
 end)
 
--- ############################################################
--- ################## Auto shop from vendor. ##################
--- ############################################################
+-- ====================================================================================================
+-- =                                      Auto shop from vendor.                                      =
+-- ====================================================================================================
 
 function BuyItemFromVendor()
     -- Do we have a shopping table ?
@@ -213,7 +367,7 @@ function BuyItemFromVendor()
         for bag = 4, 0, -1 do
             for slotNum = GetContainerNumSlots(bag), 1, -1 do
                 local itemLink = GetContainerItemLink(bag, slotNum)
-                if (itemLink) and (string.find(itemLink, itemName)) then
+                if (itemLink) and (string.find(string.lower(itemLink), string.lower(itemName))) then
                     local _, count = GetContainerItemInfo(bag, slotNum)
                     ItemCount = ItemCount + count
                 end
@@ -258,9 +412,9 @@ function BuyItemFromVendor()
 
 end
 
--- ############################################################
--- ###################### Get the mob ID ######################
--- ############################################################
+-- ====================================================================================================
+-- =                                         Get the mob "ID"                                         =
+-- ====================================================================================================
 
 function GetMobInfo()
     -- As it's not possible to get the ID of a mob in 1.12 we need to do it in another way.
@@ -289,9 +443,9 @@ function GetMobInfo()
     end
 end
 
--- ############################################################
--- ################# OnUpdate on every frame. #################
--- ############################################################
+-- ====================================================================================================
+-- =                                     OnUpdate on every frame.                                     =
+-- ====================================================================================================
 
 f:SetScript("OnUpdate",function()
 
@@ -303,9 +457,9 @@ f:SetScript("OnUpdate",function()
 
 end)
 
--- ############################################################
--- ##################### Hunter Auto Shot #####################
--- ############################################################
+-- ====================================================================================================
+-- =                                         Hunter Auto Shot                                         =
+-- ====================================================================================================
 
 function HunterAutoAttack()
 
@@ -340,9 +494,9 @@ function HunterAutoAttack()
 
 end
 
--- ############################################################
--- ######################### Hunter Pet #######################
--- ############################################################
+-- ====================================================================================================
+-- =                                            Hunter Pet                                            =
+-- ====================================================================================================
 
 function HunterPet()
 
@@ -366,9 +520,9 @@ function HunterPet()
 
 end
 
--- ############################################################
--- #################### Target new enermy. ####################
--- ############################################################
+-- ====================================================================================================
+-- =                                        Target new enermy.                                        =
+-- ====================================================================================================
 
 function TargetNewEnemy()
     -- Do we have a target or maybe a dead target ?
@@ -396,9 +550,9 @@ function TargetNewEnemy()
     end
 end
 
--- ############################################################
--- ###################### Rogue Rotation ######################
--- ############################################################
+-- ====================================================================================================
+-- =                                          Rogue Rotation                                          =
+-- ====================================================================================================
 
 function RogueAttack()
 
@@ -536,9 +690,9 @@ function RogueAttack()
 
 end
 
--- ############################################################
--- #### Is someone in the group there is buffing Windfury? ####
--- ############################################################
+-- ====================================================================================================
+-- =                        Is someone in the group there is buffing Windfury?                        =
+-- ====================================================================================================
 
 function WindfuryFromShaman()
     -- Set some locals
@@ -647,9 +801,9 @@ function WindfuryFromShaman()
     end
 end
 
--- ############################################################
--- ################### Do we know the spell ###################
--- ############################################################
+-- ====================================================================================================
+-- =                                      Do we know the spell ?                                      =
+-- ====================================================================================================
 
 function CheckIfSpellIsKnown(spellName, rank)
     local i = 1
@@ -735,10 +889,9 @@ function CheckIfSpellIsKnown(spellName, rank)
     return false
 end
 
--- ############################################################
--- ####################### Rogue Poison #######################
--- ############################################################
-
+-- ====================================================================================================
+-- =                                           Rogue Poison                                           =
+-- ====================================================================================================
 
 function RoguePoison()
 
@@ -799,9 +952,9 @@ function RoguePoison()
     end
 end
 
--- ############################################################
--- ##################### Rogue Pickpocket #####################
--- ############################################################
+-- ====================================================================================================
+-- =                                         Rogue Pickpocket                                         =
+-- ====================================================================================================
 
 function PickpocketTarget()
 
@@ -820,9 +973,9 @@ function PickpocketTarget()
 
 end
 
--- ############################################################
--- ###################### Paladin attack ######################
--- ############################################################
+-- ====================================================================================================
+-- =                                          Paladin attack                                          =
+-- ====================================================================================================
 
 function PaladinAttack()
 
@@ -884,9 +1037,9 @@ function PaladinAttack()
 
 end
 
--- ############################################################
--- ################# Is Fishing Pole Equipped #################
--- ############################################################
+-- ====================================================================================================
+-- =                                    Is Fishing Pole Equipped ?                                    =
+-- ====================================================================================================
 
 function FishingPoleEquipped()
     local Pole = GetInventoryItemTexture("player", GetInventorySlotInfo("MainHandSlot"));
@@ -895,10 +1048,10 @@ function FishingPoleEquipped()
     end
 end
 
--- ############################################################
--- ###################### Priest healing ######################
--- ###################### NOT TESTED YET ######################
--- ############################################################
+-- ====================================================================================================
+-- =                                          Priest healing                                          =
+-- =                                          NOT TESTED YET                                          =
+-- ====================================================================================================
 
 -- =Inner Focus + Flash Heal + Heal=-
 function PriestHeal()
@@ -1025,9 +1178,9 @@ function PriestHeal()
     end;
 end
 
--- ############################################################
--- ######### Get a name on what is what button number #########
--- ############################################################
+-- ====================================================================================================
+-- =                             Get a name on what is what button number                             =
+-- ====================================================================================================
 
 function reportActionButtons()
 	local lActionSlot = 0;
@@ -1044,15 +1197,15 @@ function reportActionButtons()
 	end
 end
 
--- ############################################################
--- ############################################################
--- ######################## For Hraska ########################
--- ############################################################
--- ############################################################
+-- ====================================================================================================
+-- ====================================================================================================
+-- =                                            For Hraska                                            =
+-- ====================================================================================================
+-- ====================================================================================================
 
--- ############################################################
--- ###################### Warrior attack ######################
--- ############################################################
+-- ====================================================================================================
+-- =                                          Warrior attack                                          =
+-- ====================================================================================================
 
 function WarriorAttack()
 
