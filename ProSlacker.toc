@@ -1,4 +1,4 @@
-## Title: EasyMode
+## Title: ProSlacker
 ## Interface: 11200
 ## Author: Subby
 ## Version: 0.1
@@ -8,4 +8,4 @@
 ## SavedVariables: MobHasNoPocketDB
 ## SavedVariablesPerCharacter: ShoppingDB
 
-EasyMode.lua
+ProSlacker.lua
