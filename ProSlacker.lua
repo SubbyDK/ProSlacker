@@ -99,8 +99,8 @@ function SlashCmdList.PROSLACKER(msg)
     -- Add what we want to auto buy to ShoppingDB.
     elseif (string.sub(string.upper(msg), 1, 3) == "BUY") then
 
-        -- Is the ShoppingDB created, if not we create it.
-        if not ShoppingDB then
+        -- Do we have a shopping table, if not then we create it.
+        if (not ShoppingDB) then
             ShoppingDB = {}
         end
 
@@ -133,6 +133,9 @@ function SlashCmdList.PROSLACKER(msg)
             if (tonumber(intQuantity)) then
                 -- Make a new string with no number.
                 OutputString = string.sub(OutputString, (NumberSpaceIndex + 1));
+            -- It was not a number.
+            else
+                intQuantity = nil
             end
         end
 
@@ -160,7 +163,7 @@ function SlashCmdList.PROSLACKER(msg)
             -- Add to ShoppingDB.
             ShoppingDB[string.lower(itemName)] = tonumber(intQuantity);
             -- Inform that we added.
-            DEFAULT_CHAT_FRAME:AddMessage("Added " .. intQuantity .. " x " .. itemName .. " to the auto shopping list.");
+            DEFAULT_CHAT_FRAME:AddMessage("|cff3333ff" .. "Added " .. "|r" .. "|cFF06c51b" .. intQuantity .. " x " .. itemName .. "|r" .. "|cff3333ff" .. " to the auto shopping list." .. "|r");
         else
             DEFAULT_CHAT_FRAME:AddMessage("Invalid input. Please use the format: /ps <quantity> <item name>");
         end
@@ -169,8 +172,8 @@ function SlashCmdList.PROSLACKER(msg)
 
     elseif (string.sub(string.upper(msg), 1, 7) == "STOPBUY") then
 
-        -- Is the ShoppingDB created, if not we create it.
-        if not ShoppingDB then
+        -- Do we have a shopping table, if not then we create it.
+        if (not ShoppingDB) then
             ShoppingDB = {}
         end
 
@@ -216,9 +219,9 @@ function SlashCmdList.PROSLACKER(msg)
             -- Is the item already in the ShoppingDB ?
             if (ShoppingDB[string.lower(itemName)]) then
                 ShoppingDB[string.lower(itemName)] = nil
-                DEFAULT_CHAT_FRAME:AddMessage("Removed " .. itemName .. " from the shopping list.");
+                DEFAULT_CHAT_FRAME:AddMessage("|cff3333ff" .. "Removed " .. "|r" .. "|cFF06c51b" .. itemName .. "|r" .. "|cff3333ff" .. " from the shopping list." .. "|r");
             else
-                DEFAULT_CHAT_FRAME:AddMessage("The item " .. itemName .. " was not in the shopping list.");
+                DEFAULT_CHAT_FRAME:AddMessage("|cff3333ff" .. "The item " .. "|r" .. "|cFF06c51b" .. itemName .. "|r" .. "|cff3333ff" .. " was not in the shopping list." .. "|r");
             end
         else
             DEFAULT_CHAT_FRAME:AddMessage("Invalid input. Please use the format: /ps stopbuy <item name>");
@@ -274,20 +277,21 @@ end
 -- https://wowwiki-archive.fandom.com/wiki/Talk:WoW_constants
 
 local BlackListErrors = {
+  [ERR_OUT_OF_MANA] = true,                     -- Not enough mana.
+  [ERR_OUT_OF_ENERGY] = true,                   -- Not enough energy.
+  [ERR_OUT_OF_RAGE] = true,                     -- Not enough rage.
+  [ERR_OUT_OF_FOCUS] = true,                    -- Not enough focus.
   [ERR_ABILITY_COOLDOWN] = true,                -- Ability is not ready yet.
   [ERR_ITEM_COOLDOWN] = true,                   -- Item is not ready yet.
   [ERR_BADATTACKPOS] = true,                    -- You are too far away!
-  [ERR_OUT_OF_ENERGY] = true,                   -- Not enough energy.
   [ERR_OUT_OF_RANGE] = true,                    -- Out of range.
-  [ERR_OUT_OF_RAGE] = true,                     -- Not enough rage.
-  [ERR_OUT_OF_FOCUS] = true,                    -- Not enough focus
   [ERR_NO_ATTACK_TARGET] = true,                -- There is nothing to attack.
-  [SPELL_FAILED_MOVING] = true,                 -- 
-  [SPELL_FAILED_AFFECTING_COMBAT] = true,       -- 
+  [SPELL_FAILED_MOVING] = true,                 -- Can't do that while moving.
+  [SPELL_FAILED_AFFECTING_COMBAT] = true,       -- You are in combat.
   [ERR_NOT_IN_COMBAT] = true,                   -- You can't do that while in combat
-  [SPELL_FAILED_UNIT_NOT_INFRONT] = true,       -- 
+  [SPELL_FAILED_UNIT_NOT_INFRONT] = true,       -- Target needs to be in front of you.
   [ERR_BADATTACKFACING] = true,                 -- You are facing the wrong way!
-  [SPELL_FAILED_TOO_CLOSE] = true,              -- 
+  [SPELL_FAILED_TOO_CLOSE] = true,              -- Target too close.
   [ERR_INVALID_ATTACK_TARGET] = true,           -- You cannot attack that target.
   [ERR_SPELL_COOLDOWN] = true,                  -- Spell is not ready yet.
   [SPELL_FAILED_NO_COMBO_POINTS] = true,        -- That ability requires combo points.
@@ -295,10 +299,10 @@ local BlackListErrors = {
   [SPELL_FAILED_SPELL_IN_PROGRESS] = true,      -- Another action is in progress.
   [SPELL_FAILED_TARGET_AURASTATE] = true,       -- You can't do that yet.
   [SPELL_FAILED_CASTER_AURASTATE] = true,       -- You can't do that yet.
-  [SPELL_FAILED_NO_ENDURANCE] = true,           -- Not enough endurance
-  [SPELL_FAILED_BAD_TARGETS] = true,            -- Invalid target
-  [SPELL_FAILED_NOT_MOUNTED] = true,            -- You are mounted
-  [SPELL_FAILED_NOT_ON_TAXI] = true,            -- You are in flight
+  [SPELL_FAILED_NO_ENDURANCE] = true,           -- Not enough endurance.
+  [SPELL_FAILED_BAD_TARGETS] = true,            -- Invalid target.
+  [SPELL_FAILED_NOT_MOUNTED] = true,            -- You are mounted.
+  [SPELL_FAILED_NOT_ON_TAXI] = true,            -- You are in flight.
 }
 
 -- ====================================================================================================
@@ -348,6 +352,7 @@ f:SetScript("OnEvent", function()
         BuyItemFromVendor()
     -- Did we close a vendor window ?
     elseif (event == "MERCHANT_CLOSED") then
+        
     end
 end)
 
@@ -357,7 +362,7 @@ end)
 
 function BuyItemFromVendor()
     -- Do we have a shopping table ?
-    if (not type(ShoppingDB) == "table") then
+    if (not ShoppingDB) then
         ShoppingDB = {}
     end
 
@@ -426,7 +431,6 @@ function GetMobInfo()
     if (name) and (level) and (zoneName) then
         return name .. ":" .. level .. ":" .. zoneName
     else
-        Debug = true
         if (Debug == true) then
             if (not name) then
                 DEFAULT_CHAT_FRAME:AddMessage("Missing name of the mob.");
@@ -438,7 +442,6 @@ function GetMobInfo()
                 DEFAULT_CHAT_FRAME:AddMessage("Missing the zone we are in.");
             end
         end
-        Debug = false
         return false
     end
 end
@@ -1207,74 +1210,102 @@ end
 -- =                                          Warrior attack                                          =
 -- ====================================================================================================
 
-function WarriorAttack()
+function WarriorDPS(at1, at2, at3, at4, at5, at6, at7, at8, at9)
 
 -- ########## The macro ##########
 -- /run -- CastSpellByName("Heroic Strike")
--- /script WarriorAttack()
+-- /script WarriorDPS("Rend", "Charge", "Bloodthirst", "Bloodrage", "Overpower") -- Rend ALWAYS have to be number one, if we want to use it.
 
-    -- Har vi et target som er dødt ?
-    if UnitExists("target") and UnitIsDead("target") then
-        -- Fjern target
-        ClearTarget();
+    -- Do we cast fishing and don't fight ?
+    if (FishingPoleEquipped() == true) then
+        CastSpellByName("Fishing");
+        return;
     end
-    -- Er target navn = nil ? (Er kun nil hvis der ikke er et target)
-    if GetUnitName("target") == nil then
-        -- Target nærmeste fjende.
-        TargetNearestEnemy()
+
+    -- Find a new enermy we can attack.
+    if (TargetNewEnemy() == false) then
+        return;
     end
+
     -- Er vi i combat ?
     if (not PlayerFrame.inCombat) then
         -- Start attact
         AttackTarget()
     end
-    -- Charge fjenden
-    CastSpellByName("Charge");
-    -- locals
-    local i, x = 1, 0
-    -- Loop gennem alle debuff på target.
-    while UnitDebuff("target",i) do
-        -- Hvis debuff icon er samme som icon som Rend
-        if UnitDebuff("target",i) == "Interface\\Icons\\Ability_Gouge" then
-            -- X = 1 så vi ved vi fandt det debuff på target.
-            x = 1
+
+    -- Get our rage.
+    -- 0 = Mana, 1 = Rage, 3 = Energy
+    local PlayerRage = UnitPower("player", 1)
+
+    -- Do we have over ?? rage and is Battle Shout up ?
+    if (PlayerRage >= 10) then
+        -- Locals
+        local hasBuff = false
+        -- Loop gennem egene buff
+        for i = 1, 64 do
+            -- Led efter Battle Shout
+            if UnitBuff("player",i) and strfind(UnitBuff("player",i),"Warrior_BattleShout") then
+                -- Vi fandt Battle Shout
+                hasBuff = true
+            end
         end
-        -- Bare en tæller så vi når gennem alle debuff på target.
-        i = i + 1
+        -- Vi fandt ikke Battle Shout
+        if (not hasBuff) then
+            -- Cast Battle Shout
+            CastSpellByName("Battle Shout");
+        end
     end
-    -- Locals
-    local IsShiftDown = IsShiftKeyDown()
-    -- Er x = 0 (Ingen Rend på target) og er targets liv over 50%
-    if (x == 0) and (UnitHealth("target")/UnitHealthMax("target") > 0.5) then
-        -- Var shift nede ?
-        if (not IsShiftDown) then
+
+    -- Check if the attack we want to make is rend, we only do that if target don't already have it on.
+    -- We also check if is shitf down ? We need to check, else the loop can stop here if target is immune.
+    -- If it's immune, then we can use Shift to not cast Rend.
+    if (at1 == "Rend") and (not IsShiftDown()) then
+        -- locals
+        local i, x = 1, 0
+        -- Loop through all debuffs on target to look for Rend icon.
+        while (UnitDebuff("target",i)) do
+            -- Is the icon the same as the one Rens is using ?
+            if (UnitDebuff("target",i) == "Interface\\Icons\\Ability_Gouge") then
+                -- We found Rend.
+                x = 1
+            end
+            -- Count up.
+            i = i + 1
+        end
+        -- Locals
+        local IsShiftDown = IsShiftKeyDown()
+        -- Do we need to cast Rend and is life of target over 30%
+        if (x == 0) and (UnitHealth("target")/UnitHealthMax("target") > 0.3) then
             -- Cast Rend
             CastSpellByName("Rend")
         end
     end
-    -- Locals
-    local hasBuff = false
-    -- Loop gennem egene buff
-    for i = 1, 64 do
-        -- Led efter Battle Shout
-        if UnitBuff("player",i) and strfind(UnitBuff("player",i),"Warrior_BattleShout") then
-            -- Vi fandt Battle Shout
-            hasBuff = true
-            -- Stop loop
-            break
-        end
+
+    -- Check if there is something we need to do.
+    if (at2) then
+        CastSpellByName(at2);
     end
-    -- Vi fandt ikke Battle Shout
-    if not hasBuff then
-        -- Cast Battle Shout
-        CastSpellByName("Battle Shout");
+    if (at3) then
+        CastSpellByName(at3);
     end
-    -- Cast Bloodthirst
-    CastSpellByName("Bloodthirst");
-    -- Cast Bloodrage
-    CastSpellByName("Bloodrage");
-    -- Cast Overpower
-    CastSpellByName("Overpower");
+    if (at4) then
+        CastSpellByName(at4);
+    end
+    if (at5) then
+        CastSpellByName(at5);
+    end
+    if (at6) then
+        CastSpellByName(at6);
+    end
+    if (at7) then
+        CastSpellByName(at7);
+    end
+    if (at8) then
+        CastSpellByName(at8);
+    end
+    if (at9) then
+        CastSpellByName(at9);
+    end
 
 end
 
