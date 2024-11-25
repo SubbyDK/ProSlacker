@@ -730,11 +730,10 @@ function WindfuryFromShaman()
                     end
                 end
                 -- Is it the icon for Windfury ?
-                if (name) and (string.find(name, "Interface\\Icons\\spell_nature_windfury")) then
+                if (name) and (string.find(name, "Interface\\Icons\\Spell_Nature_Windfury")) then
                     if (Debug == true) then
                         DEFAULT_CHAT_FRAME:AddMessage("We found the \"Windfury Totem Effect\" buff.")
                     end
-                    DEFAULT_CHAT_FRAME:AddMessage("We found the \"Windfury Totem Effect\" buff.")
                     LastSeenWindfuryTime = GetTime()
                     return true
                 end
@@ -763,13 +762,10 @@ function WindfuryFromShaman()
                         end
                         -- 
                         if (hour == 0) and (tonumber(minutes) == 0) then
-                            DEFAULT_CHAT_FRAME:AddMessage("1")
                             PrintTime = seconds .. "sec"
                         elseif (hour == 0) then
-                            DEFAULT_CHAT_FRAME:AddMessage("2")
                             PrintTime = minutes .. "min " .. seconds .. "sec"
                         else
-                            DEFAULT_CHAT_FRAME:AddMessage("3")
                             PrintTime = hour .. "hour " .. minutes .. "min " .. seconds .. "sec"
                         end
                         -- Print a message that we are missing Windfury,
