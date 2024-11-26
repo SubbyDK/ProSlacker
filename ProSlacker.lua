@@ -408,7 +408,8 @@ function BuyItemFromVendor()
                             end
                         end
                         -- 
-                        DEFAULT_CHAT_FRAME:AddMessage(AddonName .. ": Buying " .. ((desiredQuantity - ItemCount) * BatchQuantity) .. " x " .. itemName .. ".")
+                        DEFAULT_CHAT_FRAME:AddMessage("|cff3333ff" .. "The item " .. "|r" .. "|cFF06c51b" .. itemName .. "|r" .. "|cff3333ff" .. " was not in the shopping list." .. "|r");
+                        DEFAULT_CHAT_FRAME:AddMessage("|cff3333ff" .. AddonName .. ": " .. "|r" .. "|cFF06c51b" .. "Buying " .. ((desiredQuantity - ItemCount) * BatchQuantity) .. " x " .. itemName .. "." .. "|r")
                     end
                 end
             end
@@ -596,19 +597,28 @@ function RogueAttack()
         strPickPocketDone = false
     end
 
-    SnD = false
+    local SnD = false
+    local db
+    -- Loop through all our buffs and look for the Slice and Dice icon.
     for i = 1, 64, 1 do
         db = UnitBuff("player",i)
+        -- Is it Slice and Dice we found ?
         if ((db ~= nil) and (string.find(db,"Interface\\Icons\\Ability_Rogue_SliceDice"))) then
             SnD = true
         end
     end
+    -- Do our target have 5 combo points ?
     if (GetComboPoints("target") == 5) then
         CastSpellByName("Eviscerate");
+    -- Do we have 3 or more combo points and do target have 20% or less health left ? 
+    elseif ((GetComboPoints("target") >= 3) and (UnitHealth("target") / UnitHealthMax("target") < 0.2)) then
+        CastSpellByName("Eviscerate");
+    -- Do we have Slice and Dice buff ?
     elseif (SnD == true) then
         CastSpellByName("Surprise Attack");
         CastSpellByName("Riposte");
         CastSpellByName("Sinister Strike");
+    -- Is there 0 combo point on target ?
     elseif (GetComboPoints("target") == 0) then
         CastSpellByName("Riposte");
         CastSpellByName("Sinister Strike");
@@ -1271,7 +1281,7 @@ function WarriorDPS(at1, at2, at3, at4, at5, at6, at7, at8, at9)
         -- Locals
         local IsShiftDown = IsShiftKeyDown()
         -- Do we need to cast Rend and is life of target over 30%
-        if (x == 0) and (UnitHealth("target")/UnitHealthMax("target") > 0.3) then
+        if (x == 0) and (UnitHealth("target") / UnitHealthMax("target") > 0.3) then
             -- Cast Rend
             CastSpellByName("Rend")
         end
