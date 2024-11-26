@@ -601,7 +601,7 @@ function RogueAttack()
     local db
     -- Loop through all our buffs and look for the Slice and Dice icon.
     for i = 1, 64, 1 do
-        db = UnitBuff("player",i)
+        db = UnitBuff("player",i) 
         -- Is it Slice and Dice we found ?
         if ((db ~= nil) and (string.find(db,"Interface\\Icons\\Ability_Rogue_SliceDice"))) then
             SnD = true
