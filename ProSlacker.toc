@@ -1,9 +1,9 @@
 ## Title: ProSlacker
 ## Interface: 11200
 ## Author: Subby
-## Version: 0.1
+## Version: 0.2
 ## DefaultState: enabled
-## Notes: "Will maybe do all the fighting for you."
+## Notes: Will help you and keep an eye on stuff.
 
 ## SavedVariables: MobHasNoPocketDB
 ## SavedVariablesPerCharacter: ShoppingDB
