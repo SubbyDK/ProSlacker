@@ -367,10 +367,10 @@ function BuyItemFromVendor()
     end
 
     for itemName, desiredQuantity in pairs(ShoppingDB) do
-        -- Check if you have enough of the item in your inventory.
         local ItemCount = 0
+        -- Check if you have enough of the item in your inventory.
         for bag = 0, 4 do
-            for slotNum = GetContainerNumSlots(bag), 1 do
+            for slotNum = 1, GetContainerNumSlots(bag) do
                 local itemLink = GetContainerItemLink(bag, slotNum)
                 if (itemLink) and (string.find(string.lower(itemLink), string.lower(itemName))) then
                     local _, count = GetContainerItemInfo(bag, slotNum)
@@ -380,43 +380,58 @@ function BuyItemFromVendor()
         end
         -- Debug
         if (Debug == true) then
-            DEFAULT_CHAT_FRAME:AddMessage("We found " .. ItemCount .. " X " .. itemName .. " in our bags.");
+            DEFAULT_CHAT_FRAME:AddMessage("We found " .. ItemCount .. " x " .. itemName .. " in our bags.");
         end
         -- Is what we have in the bags less then what we want to have ?
         if (ItemCount < desiredQuantity) then
             local quantityToBuy = (desiredQuantity - ItemCount)
             -- Debug
             if (Debug == true) then
-                DEFAULT_CHAT_FRAME:AddMessage("We need to buy " .. quantityToBuy .. " X " .. itemName .. " in our bags.");
+                DEFAULT_CHAT_FRAME:AddMessage("We need to buy " .. quantityToBuy .. " x " .. itemName);
             end
             for i = 1, GetMerchantNumItems() do
                 local itemLink = GetMerchantItemLink(i)
                 if (itemLink) and (string.find(string.lower(itemLink), string.lower(itemName))) then
                     local vendorItemName, IconTexture, BatchPrice, BatchQuantity, vendorItemCount, isUsable, extendedCost = GetMerchantItemInfo(i)
+                    -- Debug
+                    if (Debug == true) then
+                        DEFAULT_CHAT_FRAME:AddMessage("Vendor have " .. itemName);
+                        DEFAULT_CHAT_FRAME:AddMessage("There is " .. BatchQuantity .. " in a batch");
+                    end
                     -- Make sure we don't buy for example 3 x 5 of something if we only want 3
                     -- If the stack is bigger then what we want, then we round down.
-                    if (BatchQuantity > quantityToBuy) then
-                        quantityToBuy = math.floor((BatchQuantity / quantityToBuy))
+                    if (BatchQuantity > 1) then
+                        quantityToBuy = math.floor((quantityToBuy / BatchQuantity))
                     end
-                    -- Do we have enough money to buy it ?
-                    local playerMoney = GetMoney()
-                    if (playerMoney > (BatchPrice * quantityToBuy)) then
-                        -- Check that the vendor have the amount we want.
-                        if (tonumber(vendorItemCount) >= tonumber(quantityToBuy)) or (tonumber(vendorItemCount) == -1) then
-                            -- Buy the required quantity
-                            for j = 1, quantityToBuy do
-                                BuyMerchantItem(i)
+                    -- Debug
+                    if (Debug == true) then
+                        DEFAULT_CHAT_FRAME:AddMessage("After calculation we need to buy " .. quantityToBuy .. " x " .. itemName);
+                    end
+                    -- After the canculation, do we still need to buy any ?
+                    if (quantityToBuy > 0) then
+                        -- Do we have enough money to buy it ?
+                        local playerMoney = GetMoney()
+                        if (playerMoney > (BatchPrice * quantityToBuy)) then
+                            -- Check that the vendor have the amount we want.
+                            if (tonumber(vendorItemCount) >= tonumber(quantityToBuy)) or (tonumber(vendorItemCount) == -1) then
+                                -- Buy the required quantity
+                                for j = 1, quantityToBuy do
+                                    BuyMerchantItem(i)
+                                end
+                            -- Vendor don't have the amount we want, so we buy what vendor have.
+                            else
+                                -- Buy what we can get.
+                                for j = 1, vendorItemCount do
+                                    BuyMerchantItem(i)
+                                end
                             end
-                        -- Vendor don't have the amount we want, so we buy what vendor have.
-                        else
-                            -- Buy what we can get.
-                            for j = 1, vendorItemCount do
-                                BuyMerchantItem(i)
+                            -- Adjust the number we buy just for the text
+                            if (BatchQuantity > 1) then
+                                quantityToBuy = (quantityToBuy * BatchQuantity)
                             end
+                            -- 
+                            DEFAULT_CHAT_FRAME:AddMessage("|cff3333ff" .. AddonName .. ": " .. "|r" .. "|cFF06c51b" .. "Buying " .. quantityToBuy .. " x " .. itemName .. "." .. "|r")
                         end
-                        -- 
-                        DEFAULT_CHAT_FRAME:AddMessage("|cff3333ff" .. "The item " .. "|r" .. "|cFF06c51b" .. itemName .. "|r" .. "|cff3333ff" .. " was not in the shopping list." .. "|r");
-                        DEFAULT_CHAT_FRAME:AddMessage("|cff3333ff" .. AddonName .. ": " .. "|r" .. "|cFF06c51b" .. "Buying " .. ((desiredQuantity - ItemCount) * BatchQuantity) .. " x " .. itemName .. "." .. "|r")
                     end
                 end
             end
