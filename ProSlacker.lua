@@ -369,8 +369,8 @@ function BuyItemFromVendor()
     for itemName, desiredQuantity in pairs(ShoppingDB) do
         -- Check if you have enough of the item in your inventory.
         local ItemCount = 0
-        for bag = 4, 0, -1 do
-            for slotNum = GetContainerNumSlots(bag), 1, -1 do
+        for bag = 0, 4 do
+            for slotNum = GetContainerNumSlots(bag), 1 do
                 local itemLink = GetContainerItemLink(bag, slotNum)
                 if (itemLink) and (string.find(string.lower(itemLink), string.lower(itemName))) then
                     local _, count = GetContainerItemInfo(bag, slotNum)
@@ -378,10 +378,17 @@ function BuyItemFromVendor()
                 end
             end
         end
+        -- Debug
+        if (Debug == true) then
+            DEFAULT_CHAT_FRAME:AddMessage("We found " .. ItemCount .. " X " .. itemName .. " in our bags.");
+        end
         -- Is what we have in the bags less then what we want to have ?
         if (ItemCount < desiredQuantity) then
             local quantityToBuy = (desiredQuantity - ItemCount)
-            -- 
+            -- Debug
+            if (Debug == true) then
+                DEFAULT_CHAT_FRAME:AddMessage("We need to buy " .. quantityToBuy .. " X " .. itemName .. " in our bags.");
+            end
             for i = 1, GetMerchantNumItems() do
                 local itemLink = GetMerchantItemLink(i)
                 if (itemLink) and (string.find(string.lower(itemLink), string.lower(itemName))) then
@@ -1239,33 +1246,26 @@ function WarriorDPS(at1, at2, at3, at4, at5, at6, at7, at8, at9)
         AttackTarget()
     end
 
-    -- Get our rage.
-    -- 0 = Mana, 1 = Rage, 3 = Energy
-    local PlayerRage = UnitPower("player", 1)
-
-    -- Do we have over ?? rage and is Battle Shout up ?
-    if (PlayerRage >= 10) then
-        -- Locals
-        local hasBuff = false
-        -- Loop gennem egene buff
-        for i = 1, 64 do
-            -- Led efter Battle Shout
-            if UnitBuff("player",i) and strfind(UnitBuff("player",i),"Warrior_BattleShout") then
-                -- Vi fandt Battle Shout
-                hasBuff = true
-            end
+    -- Locals
+    local hasBuff = false
+    -- Loop gennem egene buff
+    for i = 1, 64 do
+        -- Led efter Battle Shout
+        if UnitBuff("player",i) and string.find(UnitBuff("player", i), "Interface\\Icons\\Ability_Warrior_BattleShout") then
+            -- Vi fandt Battle Shout
+            hasBuff = true
         end
-        -- Vi fandt ikke Battle Shout
-        if (not hasBuff) then
-            -- Cast Battle Shout
-            CastSpellByName("Battle Shout");
-        end
+    end
+    -- Vi fandt ikke Battle Shout
+    if (not hasBuff) then
+        -- Cast Battle Shout
+        CastSpellByName("Battle Shout");
     end
 
     -- Check if the attack we want to make is rend, we only do that if target don't already have it on.
     -- We also check if is shitf down ? We need to check, else the loop can stop here if target is immune.
     -- If it's immune, then we can use Shift to not cast Rend.
-    if (at1 == "Rend") and (not IsShiftDown()) then
+    if (at1 == "Rend") and (not IsShiftKeyDown()) then
         -- locals
         local i, x = 1, 0
         -- Loop through all debuffs on target to look for Rend icon.
