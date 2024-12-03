@@ -738,9 +738,9 @@ function WindfuryFromShaman()
     if (partyMembers > 0) then
         -- Do we have a Shaman in our group ? No need to check whole raid as Windfury is only for party.
         for i = 1, 4 do
-            local unitName, unitClass = UnitName("party" .. i), UnitClass("party" .. i)
-            -- Check if we have a name and it's a Shaman.
-            if (unitName) and (string.lower(unitClass) == "shaman") then
+            local unitName, unitClass , unitLevel = UnitName("party" .. i), UnitClass("party" .. i), UnitLevel("party" .. i)
+            -- Check if we have a name and it's a Shaman and it's level 32 or above.
+            if (unitName) and (string.lower(unitClass) == "shaman") and (unitLevel >= 32) then
                 if (Debug == true) then
                     DEFAULT_CHAT_FRAME:AddMessage("We have a Shaman in our party.")
                 end
@@ -800,8 +800,12 @@ function WindfuryFromShaman()
                         else
                             PrintTime = hour .. "hour " .. minutes .. "min " .. seconds .. "sec"
                         end
-                        -- Print a message that we are missing Windfury,
-                        DEFAULT_CHAT_FRAME:AddMessage("|cff" .. strPoisonMissingColor .. "Windfury missing for " .. PrintTime .. ", consider using poison." .. "|r")
+                        -- Print a message that we are missing Windfury if we don't have poison on main-hand.
+                        -- Do we have poison on our weapons ?
+                        hasMainHandEnchant = GetWeaponEnchantInfo();
+                        if (not hasMainHandEnchant) then
+                            DEFAULT_CHAT_FRAME:AddMessage("|cff" .. strPoisonMissingColor .. "Windfury missing for " .. PrintTime .. ". Consider using poison." .. "|r")
+                        end
                         -- 
                         lastMessageTime_WindfuryTotem = GetTime()
                     end
