@@ -1269,13 +1269,13 @@ function WarriorDPS(at1, at2, at3, at4, at5, at6, at7, at8, at9)
     local hasBuff = false
     -- Loop gennem egene buff
     for i = 1, 64 do
-        -- Led efter Battle Shout
+        -- Is it Battle Shout we found ?
         if UnitBuff("player",i) and string.find(UnitBuff("player", i), "Interface\\Icons\\Ability_Warrior_BattleShout") then
-            -- Vi fandt Battle Shout
+            -- We found Battle Shout
             hasBuff = true
         end
     end
-    -- Vi fandt ikke Battle Shout
+    -- We did not find Battle Shout, so we cast it.
     if (not hasBuff) then
         -- Cast Battle Shout
         CastSpellByName("Battle Shout");
@@ -1306,7 +1306,7 @@ function WarriorDPS(at1, at2, at3, at4, at5, at6, at7, at8, at9)
         end
     end
 
-    -- Check if there is something we need to do.
+    -- Check if there is something else we need to do.
     if (at2) then
         CastSpellByName(at2);
     end
