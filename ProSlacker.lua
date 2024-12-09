@@ -1233,10 +1233,33 @@ function reportActionButtons()
 end
 
 -- ====================================================================================================
+-- =                                        Taunt when tanking                                        =
 -- ====================================================================================================
--- =                                            For Hraska                                            =
--- ====================================================================================================
--- ====================================================================================================
+
+function TauntTarget()
+
+-- ########## The macro ##########
+-- /run -- CastSpellByName("Taunt") -- Use Growl if your a Druid.
+-- /script TauntTarget()
+
+    -- Get name of target of target, player name and player class.
+    local target = UnitName("target")
+    local targetOfTarget = UnitName("targettarget")
+    local myName = UnitName("player")
+    local playerClass = UnitClass("player")
+
+    -- If the name of target of target is not my name, then taunt the target.
+    if (targetOfTarget) and (targetOfTarget ~= myName) then
+        -- Are we Warrior or Druid ?
+        if (playerClass == "WARRIOR") then
+            CastSpellByName("Taunt");
+        elseif (playerClass == "DRUID") then
+            CastSpellByName("Growl");
+        else
+            DEFAULT_CHAT_FRAME:AddMessage("You are not playing a class there can taunt.");
+        end
+    end
+end
 
 -- ====================================================================================================
 -- =                                          Warrior attack                                          =
