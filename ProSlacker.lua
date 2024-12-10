@@ -1327,6 +1327,9 @@ function WarriorDPS(at1, at2, at3, at4, at5, at6, at7, at8, at9)
             -- Cast Rend
             CastSpellByName("Rend")
         end
+    -- at1 was not Rend, so we run what is in at1
+    elseif (at1) and (not IsShiftKeyDown()) then
+        CastSpellByName(at1);
     end
 
     -- Check if there is something else we need to do.
