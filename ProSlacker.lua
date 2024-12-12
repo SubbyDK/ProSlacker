@@ -1256,7 +1256,7 @@ function TauntTarget()
         elseif (playerClass == "DRUID") then
             CastSpellByName("Growl");
         else
-            DEFAULT_CHAT_FRAME:AddMessage("You are not playing a class there can taunt.");
+            DEFAULT_CHAT_FRAME:AddMessage("You are not playing a class there can't taunt.");
         end
     end
 end
