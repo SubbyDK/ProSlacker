@@ -441,6 +441,20 @@ function BuyItemFromVendor()
 end
 
 -- ====================================================================================================
+-- =                                     OnUpdate on every frame.                                     =
+-- ====================================================================================================
+
+f:SetScript("OnUpdate",function()
+
+    if ((LogInTime + 3) < GetTime()) and (ErrorMessageFilter == false) then
+        UIErrorsFrame:UnregisterEvent("UI_ERROR_MESSAGE");
+        DEFAULT_CHAT_FRAME:AddMessage("|cff3333ff" .. AddonName .. " by " .. "|r" .. "|cFF06c51b" .. "Subby" .. "|r" .. "|cff3333ff" .. " is loaded." .. "|r");
+        ErrorMessageFilter = true
+    end
+
+end)
+
+-- ====================================================================================================
 -- =                                         Get the mob "ID"                                         =
 -- ====================================================================================================
 
@@ -470,18 +484,39 @@ function GetMobInfo()
 end
 
 -- ====================================================================================================
--- =                                     OnUpdate on every frame.                                     =
+-- =                                        Target new enermy.                                        =
 -- ====================================================================================================
 
-f:SetScript("OnUpdate",function()
-
-    if ((LogInTime + 3) < GetTime()) and (ErrorMessageFilter == false) then
-        UIErrorsFrame:UnregisterEvent("UI_ERROR_MESSAGE");
-        DEFAULT_CHAT_FRAME:AddMessage("|cff3333ff" .. AddonName .. " by " .. "|r" .. "|cFF06c51b" .. "Subby" .. "|r" .. "|cff3333ff" .. " is loaded." .. "|r");
-        ErrorMessageFilter = true
+function TargetNewEnemy()
+    -- Do we have a target or maybe a dead target ?
+    if (GetUnitName("target") == nil) or (UnitIsDeadOrGhost("target")) then
+        -- Target enermy
+        TargetNearestEnemy();
+        -- Check if it a NPC or a Player, no need to check the rest if it's a NPC
+        if (UnitIsPlayer("target") == true) then
+            -- Check to see if we have a target now.
+            if (GetUnitName("target") ~= nil) then
+                -- Find our faction
+                local MyFaction = UnitFactionGroup("player"); -- UnitFactionGroup returns either "Alliance", "Horde", "Neutral" or nil. Also works for player pets.
+                local TargetFaction = UnitFactionGroup("target");
+                -- Check if it's a opposite faction.
+                if ((MyFaction == "Horde") and (TargetFaction == "Alliance")) or ((MyFaction == "Alliance") and (TargetFaction == "Horde")) then
+                    -- Do we both have PVP enabled ? If so, then we attack, else we clear target.
+                    if (UnitIsPVP("target")) and (UnitIsPVP("player")) then
+                        return true
+                    else
+                        ClearTarget();
+                        return false
+                    end
+                end
+                return true
+            end
+            return false
+        else
+            return true
+        end
     end
-
-end)
+end
 
 -- ====================================================================================================
 -- =                                         Hunter Auto Shot                                         =
@@ -544,36 +579,6 @@ function HunterPet()
         CastSpellByName("Call Pet")
     end
 
-end
-
--- ====================================================================================================
--- =                                        Target new enermy.                                        =
--- ====================================================================================================
-
-function TargetNewEnemy()
-    -- Do we have a target or maybe a dead target ?
-    if (GetUnitName("target") == nil) or (UnitIsDeadOrGhost("target")) then
-        -- Target enermy
-        TargetNearestEnemy();
-        -- Check to see if we have a target now.
-        if (GetUnitName("target") ~= nil) then
-            -- Find our faction
-            local MyFaction = UnitFactionGroup("player"); -- UnitFactionGroup returns either "Alliance", "Horde", "Neutral" or nil. Also works for player pets.
-            local TargetFaction = UnitFactionGroup("target");
-            -- Check if it's a opposite faction.
-            if ((MyFaction == "Horde") and (TargetFaction == "Alliance")) or ((MyFaction == "Alliance") and (TargetFaction == "Horde")) then
-                -- Do we both have PVP enabled ? If so, then we attack, else we clear target.
-                if (UnitIsPVP("target")) and (UnitIsPVP("player")) then
-                    return true
-                else
-                    ClearTarget();
-                    return false
-                end
-            end
-            return true
-        end
-        return false
-    end
 end
 
 -- ====================================================================================================
@@ -1360,7 +1365,62 @@ function WarriorDPS(at1, at2, at3, at4, at5, at6, at7, at8, at9)
 
 end
 
+-- ====================================================================================================
+-- =                                           Druid attack                                           =
+-- ====================================================================================================
 
+function DruidDPS()
+
+-- ########## The macro ##########
+-- /run -- CastSpellByName("Attack")
+-- /script DruidDPS()
+
+    -- Do we cast fishing and don't fight ?
+    if (FishingPoleEquipped() == true) then
+        CastSpellByName("Fishing");
+        return;
+    end
+
+    -- Find a new enermy we can attack.
+    if (TargetNewEnemy() == false) then
+        return;
+    end
+
+    -- Er vi i combat ?
+    if (not PlayerFrame.inCombat) then
+        -- Start attact
+        AttackTarget()
+    end
+
+    -- Locals
+    local MotW = false
+    local Thorns = false
+    -- Loop gennem egene buff
+    for i = 1, 64 do
+        if (UnitBuff("player",i)) then
+            -- DEFAULT_CHAT_FRAME:AddMessage(UnitBuff("player",i));
+        end
+        -- Is it Mark of the Wild we found ?
+        if UnitBuff("player",i) and string.find(UnitBuff("player", i), "Interface\\Icons\\Spell_Nature_Regeneration") then
+            MotW = true
+        end
+        -- Is it Thorns we found ?
+        if UnitBuff("player",i) and string.find(UnitBuff("player", i), "Interface\\Icons\\Spell_Nature_Thorns") then
+            Thorns = true
+        end
+    end
+    -- We did not find Mark of the Wild, so we cast it.
+    if (not MotW) then
+        CastSpellByName("Mark of the Wild");
+    end
+    -- We did not find Thorns, so we cast it.
+    if (not Thorns) then
+        CastSpellByName("Thorns");
+    end
+
+    CastSpellByName("Wrath");
+
+end
 
 
 
