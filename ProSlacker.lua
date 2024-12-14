@@ -65,6 +65,7 @@ local intWindfuryWaitTime = 180                 -- How many sec do we want to wa
 local strPoisonLowColor = "ff8633"              -- Color for the low count or time on poison.
 local strPoisonMissingColor = "ff3333"          -- Color for the missing poison.
 local strPoisonApplyingColor = "00FF00"         -- Color for applying poison to weapon.
+local RogueJujuPower = true                     -- 
 
 -- ============================================== Shaman ==============================================
 
@@ -602,6 +603,37 @@ function RogueAttack()
         return;
     end
 
+    -- Set some locals
+    local partyMembers = GetNumPartyMembers()   -- Get group numbers
+
+    -- Do we use Juju Power ?
+    if (RogueJujuPower == true) and (partyMembers > 0) then
+        -- Set locals
+        local Juju = false
+        -- Loop through all our buffs and look for the Juju Power icon.
+        for i = 1, 64, 1 do
+            local JujuBuff = UnitBuff("player",i);
+            -- Is it Juju Power we found ?
+            if ((JujuBuff ~= nil) and (string.find(JujuBuff,"Interface\\Icons\\INV_Misc_MonsterScales_11"))) then
+                Juju = true
+            end
+        end
+        -- Do we need to use Juju Power ?
+        if (Juju == false) then
+            -- Do we have any Juju Power in our bags ?
+            for bag = 0, 4 do
+                for slotNum = 1, GetContainerNumSlots(bag) do
+                -- for slotNum = GetContainerNumSlots(bag), 1, -1 do
+                    local itemLink = GetContainerItemLink(bag, slotNum)
+                    if itemLink and string.find(string.lower(itemLink), "juju power") then
+                        -- We found one, so we use it.
+                        UseContainerItem(bag, slotNum)
+                    end
+                end
+            end
+        end
+    end
+--]]
     -- 
     local icon, name, StealthActive, castable = GetShapeshiftFormInfo(1);
     if (StealthActive == 1) then
@@ -742,7 +774,7 @@ function WindfuryFromShaman()
     -- Are we even in a group ?
     if (partyMembers > 0) then
         -- Do we have a Shaman in our group ? No need to check whole raid as Windfury is only for party.
-        for i = 1, 4 do
+        for i = 1, partyMembers do
             local unitName, unitClass , unitLevel = UnitName("party" .. i), UnitClass("party" .. i), UnitLevel("party" .. i)
             -- Check if we have a name and it's a Shaman and it's level 32 or above.
             if (unitName) and (string.lower(unitClass) == "shaman") and (unitLevel >= 32) then
@@ -751,7 +783,6 @@ function WindfuryFromShaman()
                 end
                 strShamanFound = true
             end
-            i = i + 1
         end
 
         -- Did we have a Shaman in our group ?
@@ -761,11 +792,11 @@ function WindfuryFromShaman()
                 -- Get the icon name of the buff
                 local name = UnitBuff("player", i)
                 -- Debug.
-                if (Debug == true) then
+                --if (Debug == true) then
                     if (name) then
-                        DEFAULT_CHAT_FRAME:AddMessage("The icon we found: " .. name)
+                        DEFAULT_CHAT_FRAME:AddMessage("The icon we found was: " .. name)
                     end
-                end
+                --end
                 -- Is it the icon for Windfury ?
                 if (name) and (string.find(name, "Interface\\Icons\\Spell_Nature_Windfury")) then
                     if (Debug == true) then
@@ -774,7 +805,6 @@ function WindfuryFromShaman()
                     LastSeenWindfuryTime = GetTime()
                     return true
                 end
-                i = i + 1
             end
             -- We don't have the Windfury buff, maybe the Shaman just need some time to get the totem down.
             if (LastSeenWindfuryTime > 0) then
