@@ -5,7 +5,7 @@
 ## DefaultState: enabled
 ## Notes: Will help with a lot of stuff and a lot of checks.
 
-## SavedVariables: MobHasNoPocketDB
+## SavedVariables: MobHasNoPocketDB, NewZones
 ## SavedVariablesPerCharacter: ShoppingDB
 
 ProSlacker.lua

@@ -5,11 +5,12 @@
 
 -- ============================================= General. =============================================
 
-local AddonName = "ProSlacker"
-local Debug = false
-local ErrorMessageFilter = false
-local LogInTime = GetTime()
-
+local AddonName = "ProSlacker"                  -- The name of the addon, just so it's easy to reuse code.
+local ErrorMessageFilter = false                -- Turns true when filter are turned on.
+local LogInTime = GetTime()                     -- 
+local RecruitTime = GetTime()                   -- 
+local StopGuildRecruit = false                  -- For stopping recruitment if we are AFK or DND
+local strDND = false                            -- To check if we are DND or not.
 -- ============================================== Druid. ==============================================
 
 -- ============================================== Hunter ==============================================
@@ -22,15 +23,15 @@ local LogInTime = GetTime()
 
 -- ============================================== Rogue. ==============================================
 
-local lastMessageTime_mainHandExpiration = 0
-local lastMessageTime_mainHandCharges = 0
-local lastMessageTime_hasMainHandEnchant = 0
-local lastMessageTime_offHandExpiration = 0
-local lastMessageTime_offHandCharges = 0
-local lastMessageTime_hasOffHandEnchant = 0
-local lastMessageTime_WindfuryTotem = 0
-local LastSeenWindfuryTime = 0
-local PrintTime = nil
+local lastMessageTime_mainHandExpiration = 0    -- 
+local lastMessageTime_mainHandCharges = 0       -- 
+local lastMessageTime_hasMainHandEnchant = 0    -- 
+local lastMessageTime_offHandExpiration = 0     -- 
+local lastMessageTime_offHandCharges = 0        -- 
+local lastMessageTime_hasOffHandEnchant = 0     -- 
+local lastMessageTime_WindfuryTotem = 0         -- 
+local LastSeenWindfuryTime = 0                  -- 
+local PrintTime = nil                           -- 
 
 -- ============================================== Shaman ==============================================
 
@@ -45,6 +46,10 @@ local PrintTime = nil
 -- ====================================================================================================
 
 -- ============================================= General. =============================================
+
+local RunRecruit = true                         -- Du we want to run the recruitment ?
+local RecruitmentRunTimer = 1800                -- How often we want to run the recruitment. (in seconds)
+local Debug = false                             -- Run debug for the addon, can also be done ingame /ps debug
 
 -- ============================================== Druid. ==============================================
 
@@ -65,7 +70,7 @@ local intWindfuryWaitTime = 180                 -- How many sec do we want to wa
 local strPoisonLowColor = "ff8633"              -- Color for the low count or time on poison.
 local strPoisonMissingColor = "ff3333"          -- Color for the missing poison.
 local strPoisonApplyingColor = "00FF00"         -- Color for applying poison to weapon.
-local RogueJujuPower = true                     -- 
+local RogueJujuPower = true                     -- Do we want to use Juju Power when in party / raid
 
 -- ============================================== Shaman ==============================================
 
@@ -314,6 +319,8 @@ local f = CreateFrame("Frame")
 f:RegisterEvent("UI_ERROR_MESSAGE");
 f:RegisterEvent("MERCHANT_SHOW");
 f:RegisterEvent("MERCHANT_CLOSED");
+f:RegisterEvent("ZONE_CHANGED_NEW_AREA");
+f:RegisterEvent("CHAT_MSG_SYSTEM");
 
 -- ====================================================================================================
 -- =                                          Event handler.                                          =
@@ -330,7 +337,7 @@ f:SetScript("OnEvent", function()
         -- Check to see if the error was that the target have no pockets.
         if (arg1 == SPELL_FAILED_TARGET_NO_POCKETS) then
             -- Is the table created ?
-            if (not type(MobHasNoPocketDB) == "table") then
+            if (not MobHasNoPocketDB) or (not type(MobHasNoPocketDB) == "table") then
                 MobHasNoPocketDB = {}
             end
             -- Insert to table that the mob don't have pockets.
@@ -354,7 +361,44 @@ f:SetScript("OnEvent", function()
     -- Did we close a vendor window ?
     elseif (event == "MERCHANT_CLOSED") then
         
+    -- Did the zone change
+    elseif (event == "ZONE_CHANGED_NEW_AREA") then
+        RegisterZone()
+    -- 
+    elseif (event == "CHAT_MSG_SYSTEM") then
+        -- Check the chat if we are AFK or DND
+        if (string.find(arg1, string.sub(MARKED_DND, 1, string.len(MARKED_DND) -3))) then
+            StopGuildRecruit = true
+            strDND = true
+        elseif (string.find(arg1, string.sub(MARKED_AFK, 1, string.len(MARKED_AFK) -2))) then
+            StopGuildRecruit = true
+        -- Check the that if we are no longer AFK or DND
+        elseif arg1 == CLEARED_DND then
+            StopGuildRecruit = false
+            strDND = false
+        elseif (arg1 == CLEARED_AFK) and (strDND == false) then
+            StopGuildRecruit = false
+        end
     end
+end)
+
+-- ====================================================================================================
+-- =                                     OnUpdate on every frame.                                     =
+-- ====================================================================================================
+
+f:SetScript("OnUpdate", function()
+
+    if ((LogInTime + 3) < GetTime()) and (ErrorMessageFilter == false) then
+        UIErrorsFrame:UnregisterEvent("UI_ERROR_MESSAGE");
+        DEFAULT_CHAT_FRAME:AddMessage("|cff3333ff" .. AddonName .. " by " .. "|r" .. "|cFF06c51b" .. "Subby" .. "|r" .. "|cff3333ff" .. " is loaded." .. "|r");
+        ErrorMessageFilter = true
+    end
+
+    -- Run guild recruitment
+    if (RecruitTime + RecruitmentRunTimer < GetTime()) and (RunRecruit == true) then
+        GuildRecruitment()
+    end
+
 end)
 
 -- ====================================================================================================
@@ -440,20 +484,6 @@ function BuyItemFromVendor()
     end
 
 end
-
--- ====================================================================================================
--- =                                     OnUpdate on every frame.                                     =
--- ====================================================================================================
-
-f:SetScript("OnUpdate",function()
-
-    if ((LogInTime + 3) < GetTime()) and (ErrorMessageFilter == false) then
-        UIErrorsFrame:UnregisterEvent("UI_ERROR_MESSAGE");
-        DEFAULT_CHAT_FRAME:AddMessage("|cff3333ff" .. AddonName .. " by " .. "|r" .. "|cFF06c51b" .. "Subby" .. "|r" .. "|cff3333ff" .. " is loaded." .. "|r");
-        ErrorMessageFilter = true
-    end
-
-end)
 
 -- ====================================================================================================
 -- =                                         Get the mob "ID"                                         =
@@ -792,11 +822,11 @@ function WindfuryFromShaman()
                 -- Get the icon name of the buff
                 local name = UnitBuff("player", i)
                 -- Debug.
-                --if (Debug == true) then
+                if (Debug == true) then
                     if (name) then
                         DEFAULT_CHAT_FRAME:AddMessage("The icon we found was: " .. name)
                     end
-                --end
+                end
                 -- Is it the icon for Windfury ?
                 if (name) and (string.find(name, "Interface\\Icons\\Spell_Nature_Windfury")) then
                     if (Debug == true) then
@@ -1452,28 +1482,190 @@ function DruidDPS()
 
 end
 
+-- ====================================================================================================
+-- =                                         Warlock rotation                                         =
+-- ====================================================================================================
 
+function WarlockRotation()
 
+    if (UnitHealth("player") / UnitHealthMax("player") > 0.9) and (UnitMana("player") / UnitManaMax("player") < 0.8) then
+        CastSpellByName("Life Tap");
+    else
+        CastSpellByName("Shadow Bolt");
+    end
 
+end
 
+-- ====================================================================================================
+-- =                                      Register unknown zone.                                      =
+-- ====================================================================================================
 
+function RegisterZone()
 
+    local CurrentNewZone = GetRealZoneText()
 
+    -- Make sure our tables is created.
+    if (not NewZones) or (not type(NewZones) == "table") then
+        NewZones = {}
+    end
 
+    -- 
+    if (CurrentNewZone ~= nil) and (not NewZones[CurrentNewZone]) then
+        NewZones[CurrentNewZone] = "Unknown"
+        DEFAULT_CHAT_FRAME:AddMessage("New zone found: " .. CurrentNewZone);
+    end
 
+end
 
+-- ====================================================================================================
+-- =                                        Guild Recruitment.                                        =
+-- ====================================================================================================
 
+function GuildRecruitment()
 
+    -- Stop recruitment if we are AFK or DND, no need to recruit if people can't write to us.
+    if (StopGuildRecruit == true) then
+        -- Add 1 min to the timer so we don't just spam trying.
+        RecruitTime = (GetTime() + 60)
+        return;
+    end
 
+    -- The recruitment messages.
+    local RecruitmentMessages = {
+        "EU - <Group Therapy> (New). We promise minimal drama, maximum fun. Mature, relaxed, everyone are welcome!",
+        "EU - <Group Therapy> (New). We're not crazy, we just raid. Mature, relaxed, everyone are welcome!",
+        "EU - <Group Therapy> (New). We raid, we conquer, we might need a therapist afterwards. Mature, relaxed, everyone welcome!",
+        "EU - <Group Therapy> (New). We're a little dysfunctional, but we raid. Mature, relaxed, everyone welcome!",
+        "EU - <Group Therapy> (New). We're not responsible for your sanity after raiding. Mature, relaxed, everyone welcome!",
+        "EU - <Group Therapy> (New). We're not afraid to wipe. Mature, relaxed, everyone welcome!",
+        "EU - <Group Therapy> (New). We're not afraid to fail. Mature, relaxed, everyone welcome!",
+        "EU - <Group Therapy> (New). Mature, relaxed raiding. We swear we know what we're doing... mostly. Everyone are welcome!",
+        "EU - <Group Therapy> (New). We're a bit chaotic, but we raid. Mature, relaxed, everyone welcome!",
+        "<Group Therapy> (EU) - New! We raid bosses, not therapists. Mature, relaxed, everyone are welcome!",
+        "<Group Therapy> (EU) - New Guild! We're not in therapy... yet. Mature, relaxed, everyone are welcome!",
+        "<Group Therapy> (EU) - New Guild! We raid hard, then vent. Mature, relaxed, everyone are welcome!",
+        "<Group Therapy> (EU) - New Guild! Mature, relaxed. We raid, we joke, we might need therapy later. Everyone are welcome!",
+        "<Group Therapy> (EU) - New Guild! We raid, we vent, we might need therapy... but it's fun! Mature, relaxed, everyone welcome!",
+        "<Group Therapy> (EU) - New! We raid bosses, not therapists. Mature, relaxed, everyone are welcome!",
+        "<Group Therapy> (EU) - New! We raid, we rage, we repeat. Mature, relaxed, everyone welcome!",
+        "<Group Therapy> (EU) - New! We raid, we rage, we recover. Mature, relaxed, everyone welcome!",
+        "<Group Therapy> (EU) - New! We raid bosses, not egos. Mature, relaxed, everyone welcome!",
+        "<Group Therapy> (EU) - New! We raid, we learn, we laugh. (Sometimes we cry). Mature, relaxed, everyone welcome!",
+        "<Group Therapy> (EU) - New! We're a bit dysfunctional, but we raid. Mature, relaxed, everyone welcome!",
+        "<Group Therapy> (EU) - New! We're recruiting mature raiders who don't mind a little chaos. Everyone are welcome!",
+        "<Group Therapy> (EU) - New! We raid bosses, not your sanity. Mature, relaxed, everyone welcome!",
+        "Join <Group Therapy> (EU)! New Guild. We raid, we die, we laugh (mostly). Mature, relaxed, everyone welcome!",
+        "Join <Group Therapy> (EU)! New Guild. We raid, we die, we resurrect, we repeat. Mature, relaxed, everyone welcome!",
+        "Join <Group Therapy> (EU)! New Guild. We raid hard, we die hard, we laugh harder. Mature, relaxed, everyone welcome!",
+        "Join <Group Therapy> (EU)! New Guild. We raid, we laugh, we learn (sometimes). Mature, relaxed, everyone welcome!",
+        "Join <Group Therapy> (EU)! New Guild. We raid, we rage, we repeat. But we have fun. Mature, relaxed, everyone welcome!",
+        "Join <Group Therapy> (EU)! New Guild. We raid, we drink, we laugh. (Maybe.) Mature, relaxed, everyone welcome!",
+        "Join <Group Therapy> (EU)! New Guild. We raid, we laugh, we might die. But it'll be fun! Everyone are welcome!",
+    }
 
+    -- The zones we want to recruit in.
+    local Zones = {
+        -- Original zones from WoW Vanilla.
+        ["Dun Morogh"] = true,
+        ["Durotar"] = true,
+        ["Elwynn Forest"] = true,
+        ["Mulgore"] = true,
+        ["Teldrassil"] = true,
+        ["Tirisfal Glades"] = true,
+        ["Darkshore"] = true,
+        ["Loch Modan"] = true,
+        ["Silverpine Forest"] = true,
+        ["Westfall"] = true,
+        ["The Barrens"] = true,
+        ["Redridge Mountains"] = true,
+        ["Stonetalon Mountains"] = true,
+        ["Ashenvale"] = true,
+        ["Duskwood"] = true,
+        ["Hillsbrad Foothills"] = true,
+        ["Wetlands"] = true,
+        ["Thousand Needles"] = true,
+        ["Alterac Mountains"] = true,
+        ["Arathi Highlands"] = true,
+        ["Desolace"] = true,
+        ["Stranglethorn Vale"] = true,
+        ["Dustwallow Marsh"] = true,
+        ["Badlands"] = true,
+        ["Swamp of Sorrows"] = true,
+        ["Feralas"] = true,
+        ["Hinterlands"] = true,
+        ["Tanaris"] = true,
+        ["Searing Gorge"] = true,
+        ["Azshara"] = true,
+        ["Blasted Lands"] = true,
+        ["Un'goro Crater"] = true,
+        ["Felwood"] = true,
+        ["Burning Steppes"] = true,
+        ["Western Plaguelands"] = true,
+        ["Eastern Plaguelands"] = true,
+        ["Winterspring"] = true,
+        ["Deadwind Pass"] = true,
+        ["Moonglade"] = true,
+        ["Silithus"] = true,
 
+        -- Citys
+        ["Undercity"] = true,
+        ["Orgrimmar"] = true,
+        ["Thunder Bluff"] = true,
 
+        -- New zones in Turtle WoW
+    }
 
+    -- Get our current zone.
+    local Zone = GetRealZoneText()
 
+    -- Check that we are in a guild.
+    if (IsInGuild()) then
 
+        -- Get the info from the guild that we need.
+        local GuildName, GuildRank, GuildRankIndex = GetGuildInfo("player")
 
+        -- Check that we are in a guild and that guild is Group Therapy and that we have a guild rank of 3 or lower. (0 = Guild Master)
+        if (GuildName) and (GuildName == "Group Therapy") and (GuildRankIndex <= 3) then
+            -- Check that we are in a zone where we want to recruit.
+            if (Zones[Zone] == true) then
+                -- Find the numbers of recruitment lines.
+                local count = 0
+                for _ in pairs(RecruitmentMessages) do
+                    count = count + 1
+                end
+                -- 
+                local RandomIndex = math.random(1, count)
+                -- Get the number of general channel
+                local ChannelId, ChannelName
+                for i = 1, 10 do
+                    -- Get the number and the name of the channel.
+                    ChannelId, ChannelName = GetChannelName(i);
+                    -- Did we get a name and are there general in the name.
+                    if (ChannelName) and (string.find(string.lower(ChannelName), "general")) then
+                        -- Send our message.
+                        SendChatMessage(RecruitmentMessages[RandomIndex], "CHANNEL", nil, ChannelId)
+                        -- Reset timer.
+                        RecruitTime = GetTime()
+                    end
+                end
+            else
+                local CurrentNewZone = GetRealZoneText()
 
+                -- Make sure our tables is created.
+                if (not NewZones) or (not type(NewZones) == "table") then
+                    NewZones = {}
+                end
 
+                -- 
+                if (CurrentNewZone ~= nil) and (not NewZones[CurrentNewZone]) and (not Zones[Zone]) then
+                    NewZones[CurrentNewZone] = "Unknown"
+                    DEFAULT_CHAT_FRAME:AddMessage("New zone found: " .. CurrentNewZone);
+                end
+            end
+        end
+    end
+
+end
 
 
 
