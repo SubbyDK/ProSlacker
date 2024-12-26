@@ -48,7 +48,7 @@ local PrintTime = nil                           --
 -- ============================================= General. =============================================
 
 local RunRecruit = true                         -- Du we want to run the recruitment ?
-local RecruitmentRunTimer = 1800                -- How often we want to run the recruitment. (in seconds)
+local RecruitmentRunTimer = 900                -- How often we want to run the recruitment. (in seconds)
 local Debug = false                             -- Run debug for the addon, can also be done ingame /ps debug
 
 -- ============================================== Druid. ==============================================
@@ -309,6 +309,7 @@ local BlackListErrors = {
   [SPELL_FAILED_BAD_TARGETS] = true,            -- Invalid target.
   [SPELL_FAILED_NOT_MOUNTED] = true,            -- You are mounted.
   [SPELL_FAILED_NOT_ON_TAXI] = true,            -- You are in flight.
+  [ERR_UNIT_NOT_FOUND] = true,                  -- Unknown Unit.
 }
 
 -- ====================================================================================================
@@ -1512,7 +1513,7 @@ function RegisterZone()
     -- 
     if (CurrentNewZone ~= nil) and (not NewZones[CurrentNewZone]) then
         NewZones[CurrentNewZone] = "Unknown"
-        DEFAULT_CHAT_FRAME:AddMessage("New zone found: " .. CurrentNewZone);
+        -- DEFAULT_CHAT_FRAME:AddMessage("New zone found — " .. CurrentNewZone);
     end
 
 end
@@ -1525,7 +1526,7 @@ function GuildRecruitment()
 
     -- Stop recruitment if we are AFK or DND, no need to recruit if people can't write to us.
     if (StopGuildRecruit == true) then
-        -- Add 1 min to the timer so we don't just spam trying.
+        -- Add 1 min to the timer so we don't just spam trying to run it.
         RecruitTime = (GetTime() + 60)
         return;
     end
@@ -1533,34 +1534,53 @@ function GuildRecruitment()
     -- The recruitment messages.
     local RecruitmentMessages = {
         "EU - <Group Therapy> (New). We promise minimal drama, maximum fun. Mature, relaxed, everyone are welcome!",
-        "EU - <Group Therapy> (New). We're not crazy, we just raid. Mature, relaxed, everyone are welcome!",
-        "EU - <Group Therapy> (New). We raid, we conquer, we might need a therapist afterwards. Mature, relaxed, everyone welcome!",
-        "EU - <Group Therapy> (New). We're a little dysfunctional, but we raid. Mature, relaxed, everyone welcome!",
+        -- "EU - <Group Therapy> (New). We're not crazy, we just raid. Mature, relaxed, everyone are welcome!",
+        -- "EU - <Group Therapy> (New). We raid, we conquer, we might need a therapist afterwards. Mature, relaxed, everyone welcome!",
+        -- "EU - <Group Therapy> (New). We're a little dysfunctional, but we raid. Mature, relaxed, everyone welcome!",
         "EU - <Group Therapy> (New). We're not responsible for your sanity after raiding. Mature, relaxed, everyone welcome!",
         "EU - <Group Therapy> (New). We're not afraid to wipe. Mature, relaxed, everyone welcome!",
         "EU - <Group Therapy> (New). We're not afraid to fail. Mature, relaxed, everyone welcome!",
         "EU - <Group Therapy> (New). Mature, relaxed raiding. We swear we know what we're doing... mostly. Everyone are welcome!",
-        "EU - <Group Therapy> (New). We're a bit chaotic, but we raid. Mature, relaxed, everyone welcome!",
-        "<Group Therapy> (EU) - New! We raid bosses, not therapists. Mature, relaxed, everyone are welcome!",
+        -- "EU - <Group Therapy> (New). We're a bit chaotic, but we raid. Mature, relaxed, everyone welcome!",
+        -- "<Group Therapy> (EU) - New! We raid bosses, not therapists. Mature, relaxed, everyone are welcome!",
         "<Group Therapy> (EU) - New Guild! We're not in therapy... yet. Mature, relaxed, everyone are welcome!",
-        "<Group Therapy> (EU) - New Guild! We raid hard, then vent. Mature, relaxed, everyone are welcome!",
-        "<Group Therapy> (EU) - New Guild! Mature, relaxed. We raid, we joke, we might need therapy later. Everyone are welcome!",
-        "<Group Therapy> (EU) - New Guild! We raid, we vent, we might need therapy... but it's fun! Mature, relaxed, everyone welcome!",
-        "<Group Therapy> (EU) - New! We raid bosses, not therapists. Mature, relaxed, everyone are welcome!",
-        "<Group Therapy> (EU) - New! We raid, we rage, we repeat. Mature, relaxed, everyone welcome!",
-        "<Group Therapy> (EU) - New! We raid, we rage, we recover. Mature, relaxed, everyone welcome!",
-        "<Group Therapy> (EU) - New! We raid bosses, not egos. Mature, relaxed, everyone welcome!",
-        "<Group Therapy> (EU) - New! We raid, we learn, we laugh. (Sometimes we cry). Mature, relaxed, everyone welcome!",
-        "<Group Therapy> (EU) - New! We're a bit dysfunctional, but we raid. Mature, relaxed, everyone welcome!",
+        -- "<Group Therapy> (EU) - New Guild! We raid hard, then vent. Mature, relaxed, everyone are welcome!",
+        -- "<Group Therapy> (EU) - New Guild! Mature, relaxed. We raid, we joke, we might need therapy later. Everyone are welcome!",
+        -- "<Group Therapy> (EU) - New Guild! We raid, we vent, we might need therapy... but it's fun! Mature, relaxed, everyone welcome!",
+        -- "<Group Therapy> (EU) - New! We raid bosses, not therapists. Mature, relaxed, everyone are welcome!",
+        -- "<Group Therapy> (EU) - New! We raid, we rage, we repeat. Mature, relaxed, everyone welcome!",
+        -- "<Group Therapy> (EU) - New! We raid, we rage, we recover. Mature, relaxed, everyone welcome!",
+        -- "<Group Therapy> (EU) - New! We raid bosses, not egos. Mature, relaxed, everyone welcome!",
+        -- "<Group Therapy> (EU) - New! We raid, we learn, we laugh. (Sometimes we cry). Mature, relaxed, everyone welcome!",
+        "<Group Therapy> (EU) - New! We're a bit dysfunctional, but we have fun. Mature, relaxed, everyone welcome!",
+        -- "<Group Therapy> (EU) - New! We're a bit dysfunctional, but we raid. Mature, relaxed, everyone welcome!",
         "<Group Therapy> (EU) - New! We're recruiting mature raiders who don't mind a little chaos. Everyone are welcome!",
-        "<Group Therapy> (EU) - New! We raid bosses, not your sanity. Mature, relaxed, everyone welcome!",
-        "Join <Group Therapy> (EU)! New Guild. We raid, we die, we laugh (mostly). Mature, relaxed, everyone welcome!",
-        "Join <Group Therapy> (EU)! New Guild. We raid, we die, we resurrect, we repeat. Mature, relaxed, everyone welcome!",
-        "Join <Group Therapy> (EU)! New Guild. We raid hard, we die hard, we laugh harder. Mature, relaxed, everyone welcome!",
-        "Join <Group Therapy> (EU)! New Guild. We raid, we laugh, we learn (sometimes). Mature, relaxed, everyone welcome!",
-        "Join <Group Therapy> (EU)! New Guild. We raid, we rage, we repeat. But we have fun. Mature, relaxed, everyone welcome!",
-        "Join <Group Therapy> (EU)! New Guild. We raid, we drink, we laugh. (Maybe.) Mature, relaxed, everyone welcome!",
-        "Join <Group Therapy> (EU)! New Guild. We raid, we laugh, we might die. But it'll be fun! Everyone are welcome!",
+        -- "<Group Therapy> (EU) - New! We raid bosses, not your sanity. Mature, relaxed, everyone welcome!",
+        -- "Join <Group Therapy> (EU)! New Guild. We raid, we die, we laugh (mostly). Mature, relaxed, everyone welcome!",
+        -- "Join <Group Therapy> (EU)! New Guild. We raid, we die, we resurrect, we repeat. Mature, relaxed, everyone welcome!",
+        -- "Join <Group Therapy> (EU)! New Guild. We raid hard, we die hard, we laugh harder. Mature, relaxed, everyone welcome!",
+        -- "Join <Group Therapy> (EU)! New Guild. We raid, we laugh, we learn (sometimes). Mature, relaxed, everyone welcome!",
+        -- "Join <Group Therapy> (EU)! New Guild. We raid, we rage, we repeat. But we have fun. Mature, relaxed, everyone welcome!",
+        -- "Join <Group Therapy> (EU)! New Guild. We raid, we drink, we laugh. (Maybe.) Mature, relaxed, everyone welcome!",
+        -- "Join <Group Therapy> (EU)! New Guild. We raid, we laugh, we might die. But it'll be fun! Everyone are welcome!",
+        "<Group Therapy> is recruiting! Join our new EU guild for a relaxed and friendly atmosphere. No drama, no stress. Just good old-fashioned fun! All classes and specs welcome.",
+        "<Group Therapy> EU is recruiting! Join our new guild and make friends while we build a community. Raiding plans in the works! No experience required.",
+        "Looking for a new home? <Group Therapy> EU is recruiting for all roles. Let's grow together and experience WoW's adventures. Raids coming soon!",
+        "<Group Therapy> EU is forming! Join our friendly guild and be part of something new. We're building a fun and supportive community. Raiding plans in the works!",
+        "<Group Therapy> EU is recruiting for a new raiding guild. Join our friendly community and help us clear content. All classes and roles welcome.",
+        "Need a new guild? <Group Therapy> EU is here for you! Join our friendly bunch and let's have some fun. Raiding plans in the works.",
+        "Join <Group Therapy> EU, a new guild looking for friendly faces! We're building a community focused on fun and camaraderie. Raiding plans are in the works for those interested.",
+        "Looking to progress in WoW? <Group Therapy> EU is recruiting! We're a new guild focused on building a strong raid team. All classes and roles welcome.",
+        "Don't miss out! <Group Therapy> EU is forming now. Be one of the founding members of our new guild and help shape our future.",
+        "<Group Therapy> EU is a supportive guild that welcomes players of all skill levels. We're here to help you grow as a player.",
+        "<Group Therapy> EU: Tired of being told you're not good enough? Join us, where we'll tell you you're exactly good enough to wipe the floor with our guildmates.",
+        "<Group Therapy> EU: Tired of guilds that take themselves too seriously? Join us! We're a casual raiding guild where we laugh at our mistakes (and yours).",
+        "<Group Therapy> EU: Tired of toxic guilds? Experience a breath of fresh air with <Group Therapy> EU. We're a casual raiding guild that prioritizes fun, friendship, and a relaxed atmosphere.",
+        "<Group Therapy> EU: Looking for a guild that balances serious raiding with plenty of laughs? Look no further! <Group Therapy> EU offers a supportive community and a fun raiding environment.",
+        "<Group Therapy> EU: Tired of toxic guilds? Join <Group Therapy> EU and experience a guild where everyone is welcome and valued.",
+        "<Group Therapy> EU: We're a guild that believes in having fun while progressing. If you're looking for a balance of both, look no further.",
+        
+        
     }
 
     -- The zones we want to recruit in.
@@ -1592,27 +1612,52 @@ function GuildRecruitment()
         ["Badlands"] = true,
         ["Swamp of Sorrows"] = true,
         ["Feralas"] = true,
-        ["Hinterlands"] = true,
+        ["The Hinterlands"] = true,
         ["Tanaris"] = true,
         ["Searing Gorge"] = true,
         ["Azshara"] = true,
         ["Blasted Lands"] = true,
-        ["Un'goro Crater"] = true,
+        ["Un'Goro Crater"] = true,
         ["Felwood"] = true,
         ["Burning Steppes"] = true,
         ["Western Plaguelands"] = true,
         ["Eastern Plaguelands"] = true,
+        ["Blackrock Mountain"] = true,
         ["Winterspring"] = true,
         ["Deadwind Pass"] = true,
         ["Moonglade"] = true,
         ["Silithus"] = true,
 
-        -- Citys
+        -- Citys.
         ["Undercity"] = true,
         ["Orgrimmar"] = true,
         ["Thunder Bluff"] = true,
+        ["Stormwind City"] = true,
 
-        -- New zones in Turtle WoW
+        -- Dungeons where we don't want to recruit in.
+        ["Blackrock Spire"] = "Nope",
+        ["Scholomance"] = "Nope",
+        ["Stratholme"] = "Nope",
+        ["Dire Maul"] = "Nope",
+
+        -- Battlegrounds where we don't want to recruit in.
+        ["Warsong Gulch"] = "Nope",
+
+        -- New zones in Turtle WoW.
+        ["Gilneas"] = true,
+        ["Tel'Abim"] = true,
+        ["Gillijim's Isle"] = true,
+        ["Hyjal"] = true,
+        ["Winter Veil Vale"] = true,
+
+        --  New citys in Turtle WoW.
+
+        -- New dungeons in Turtle WoW.
+        ["Stormwind Vault"] = "Nope",
+
+        -- New battlegrounds in Turtle WoW.
+        
+
     }
 
     -- Get our current zone.
@@ -1637,7 +1682,7 @@ function GuildRecruitment()
                 local RandomIndex = math.random(1, count)
                 -- Get the number of general channel
                 local ChannelId, ChannelName
-                for i = 1, 10 do
+                for i = 1, 20 do
                     -- Get the number and the name of the channel.
                     ChannelId, ChannelName = GetChannelName(i);
                     -- Did we get a name and are there general in the name.
@@ -1648,18 +1693,14 @@ function GuildRecruitment()
                         RecruitTime = GetTime()
                     end
                 end
-            else
-                local CurrentNewZone = GetRealZoneText()
-
-                -- Make sure our tables is created.
-                if (not NewZones) or (not type(NewZones) == "table") then
-                    NewZones = {}
-                end
-
-                -- 
-                if (CurrentNewZone ~= nil) and (not NewZones[CurrentNewZone]) and (not Zones[Zone]) then
-                    NewZones[CurrentNewZone] = "Unknown"
-                    DEFAULT_CHAT_FRAME:AddMessage("New zone found: " .. CurrentNewZone);
+                -- Check all the zones that we have found also is in the zones we want to recruit in.
+                for zoneName, _ in pairs(NewZones) do
+                    if (not Zones[zoneName]) then
+                        -- DEFAULT_CHAT_FRAME:AddMessage(zoneName .. " not found in our list, maybe we don't recruit here ?");
+                        NewZones[zoneName] = "Unknow zone, find out of if we want to recruit here."
+                    else
+                        NewZones[zoneName] = "Found in addon."
+                    end
                 end
             end
         end
@@ -1667,8 +1708,16 @@ function GuildRecruitment()
 
 end
 
+-- ====================================================================================================
+-- =                                            TEST AREA.                                            =
+-- =                              DON'T EXPECT ANYTHING TO WORK HERE. :)                              =
+-- ====================================================================================================
 
+function Test()
 
+    
+
+end
 
 
 
