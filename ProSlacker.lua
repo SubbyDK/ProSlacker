@@ -48,7 +48,7 @@ local PrintTime = nil                           --
 -- ============================================= General. =============================================
 
 local RunRecruit = true                         -- Du we want to run the recruitment ?
-local RecruitmentRunTimer = 900                -- How often we want to run the recruitment. (in seconds)
+local RecruitmentRunTimer = 900                 -- How often we want to run the recruitment. (in seconds)
 local Debug = false                             -- Run debug for the addon, can also be done ingame /ps debug
 
 -- ============================================== Druid. ==============================================
@@ -1537,44 +1537,25 @@ function GuildRecruitment()
         "<Group Therapy> EU: New guild forming! Join our friendly and mature community. We're building a strong core group with raiding plans coming soon. Expect plenty of laughs along the way.",
         "<Group Therapy> EU: Tired of the same old guild drama? <Group Therapy> EU is a new guild forming with a focus on fun, friendship, and (occasionally) serious raiding.",
         "<Group Therapy> EU: Looking for a mature and friendly guild with a focus on casual raiding? Join <Group Therapy> EU! We're a new guild forming with plenty of laughs and in-jokes planned.",
-        "<Group Therapy> EU: <Group Therapy> EU is a new guild forming for mature players who enjoy raiding and appreciate a good laugh. Join us as we build a strong community together.",
-        "<Group Therapy> EU: New guild forming! <Group Therapy> EU is recruiting friendly and mature players for casual raiding. We're building a community where you can be yourself and have fun.",
-        "<Group Therapy> EU: <Group Therapy> EU: New guild forming! Join our friendly and mature community. We're building a strong core group with raiding plans coming soon. Expect plenty of laughs along the way.",
-        "<Group Therapy> EU: Tired of the same old guild drama? <Group Therapy> EU is a new guild forming with a focus on fun, friendship, and (occasionally) serious raiding.",
-        "<Group Therapy> EU: Looking for a mature and friendly guild with a focus on casual raiding? Join <Group Therapy> EU! We're a new guild forming with plenty of laughs and in-jokes planned.",
-        "<Group Therapy> EU: <Group Therapy> EU is a new guild forming for mature players who enjoy raiding and appreciate a good laugh. Join us as we build a strong community together.",
         "<Group Therapy> EU: New guild forming! <Group Therapy> EU is recruiting friendly and mature players for casual raiding. We're building a community where you can be yourself and have fun.",
         "<Group Therapy> EU: Join <Group Therapy> EU, a new guild forming for mature players who enjoy raiding and appreciate a good laugh. We're building a strong community together.",
-        "<Group Therapy> EU: Tired of the same old guild drama? <Group Therapy> EU is a new guild forming with a focus on fun, friendship, and (occasionally) serious raiding.",
-        "<Group Therapy> EU: Looking for a mature and friendly guild with a focus on casual raiding? Join <Group Therapy> EU! We're a new guild forming with plenty of laughs and in-jokes planned.",
-        "<Group Therapy> EU: <Group Therapy> EU is a new guild forming for mature players who enjoy raiding and appreciate a good laugh. Join us as we build a strong community together.",
-        "<Group Therapy> EU: New guild forming! <Group Therapy> EU is recruiting friendly and mature players for casual raiding. We're building a community where you can be yourself and have fun.",
-        "<Group Therapy> EU: Join <Group Therapy> EU, a new guild forming for mature players who enjoy raiding and appreciate a good laugh. We're building a strong community together.",
-        "<Group Therapy> EU: Tired of the same old guild drama? <Group Therapy> EU is a new guild forming with a focus on fun, friendship, and (occasionally) serious raiding.",
-        "<Group Therapy> EU: Looking for a mature and friendly guild with a focus on casual raiding? Join <Group Therapy> EU! We're a new guild forming with plenty of laughs and in-jokes planned.",
-        "<Group Therapy> EU: <Group Therapy> EU is a new guild forming for mature players who enjoy raiding and appreciate a good laugh. Join us as we build a strong community together.",
-        "<Group Therapy> EU: New guild forming! <Group Therapy> EU is recruiting friendly and mature players for casual raiding. We're building a community where you can be yourself and have fun.",
+        "<Group Therapy> EU is a new guild forming for mature players who enjoy raiding and appreciate a good laugh. Join us as we build a strong community together.",
 
-        "<Group Therapy> EU: New guild forming! Join our friendly and mature community. We're building a fun raiding environment with a touch of sarcasm. Raid plans coming soon!",
-        "<Group Therapy> EU: <Group Therapy> EU is recruiting! We're a new guild forming with a focus on friendly raiding and mature humor. Expect occasional chaos and definitely some wipes.",
-        "<Group Therapy> EU: Tired of the usual guild drama? <Group Therapy> EU is forming! We're a friendly and mature guild with raid plans in the works. Expect plenty of laughs along the way.",
-        "<Group Therapy> EU: <Group Therapy> EU: New guild forming! Join our community of mature and friendly raiders. We're building a relaxed environment with raid plans on the horizon.",
+        "<Group Therapy> EU is recruiting! We're a new guild forming with a focus on friendly raiding and mature humor. Expect occasional chaos and definitely some wipes.",
+        "<Group Therapy> EU: New guild forming! We're a friendly and mature guild with raid plans in the works. Expect plenty of laughs and maybe a few accidental wipes.",
         "<Group Therapy> EU: Looking for a new guild? <Group Therapy> EU is forming! We're a friendly and mature guild with a focus on casual raiding and a healthy dose of sarcasm.",
-        "<Group Therapy> EU: <Group Therapy> EU: New guild forming! Join our friendly and mature community. We're planning raids and looking for fun-loving players who don't take themselves too seriously.",
-        "<Group Therapy> EU: <Group Therapy> EU: New guild forming! We're a friendly and mature guild with raid plans in the works. Expect plenty of laughs and maybe a few accidental wipes.",
-        "<Group Therapy> EU: Tired of the usual guild drama? Join <Group Therapy> EU! We're a new guild forming with a focus on friendly raiding and mature humor.",
-        "<Group Therapy> EU: <Group Therapy> EU: New guild forming! Join our community and experience raiding with a friendly and mature group. We're planning raids and looking for fun-loving players.",
-        "<Group Therapy> EU: Looking for a new guild? <Group Therapy> EU is forming! We're a friendly and mature guild with raid plans in the works. Join us for fun, laughter, and maybe a few epic fails.",
-        "<Group Therapy> EU: <Group Therapy> EU: New guild forming! Join our friendly and mature community. We're building a relaxed raiding environment with a focus on fun and friendship.",
-        "<Group Therapy> EU: Tired of the usual guild drama? <Group Therapy> EU is forming! We're a friendly and mature guild with raid plans in the works. Come join the fun!",
-        "<Group Therapy> EU: <Group Therapy> EU: New guild forming! Join our community of mature and friendly raiders. We're planning raids and looking for players with a good sense of humor.",
         "<Group Therapy> EU: Looking for a new guild? <Group Therapy> EU is forming! We're a friendly and mature guild with raid plans in the works. Expect plenty of laughs and occasional chaos.",
-        "<Group Therapy> EU: <Group Therapy> EU: New guild forming! Join our community and experience raiding with a friendly and mature group. We're planning raids and looking for fun-loving players.",
-        "<Group Therapy> EU: Tired of the usual guild drama? <Group Therapy> EU is forming! We're a friendly and mature guild with raid plans in the works. Come join the fun!",
-        "<Group Therapy> EU: <Group Therapy> EU: New guild forming! Join our community of mature and friendly raiders. We're building a relaxed raiding environment with a focus on fun and friendship.",
         "<Group Therapy> EU: Looking for a new guild? <Group Therapy> EU is forming! We're a friendly and mature guild with raid plans in the works. Join us for fun, laughter, and maybe a few epic fails.",
-        "<Group Therapy> EU: <Group Therapy> EU: New guild forming! Join our community and experience raiding with a friendly and mature group. We're planning raids and looking for fun-loving players.",
+        "<Group Therapy> EU: New guild forming! Join our community and experience raiding with a friendly and mature group. We're planning raids and looking for fun-loving players.",
+        "<Group Therapy> EU: New guild forming! Join our community of mature and friendly raiders. We're building a relaxed raiding environment with a focus on fun and friendship.",
+        "<Group Therapy> EU: New guild forming! Join our community of mature and friendly raiders. We're planning raids and looking for players with a good sense of humor.",
+        "<Group Therapy> EU: New guild forming! Join our friendly and mature community. We're planning raids and looking for fun-loving players who don't take themselves too seriously.",
+        "<Group Therapy> EU: New guild forming! Join our friendly and mature community. We're building a fun raiding environment with a touch of sarcasm. Raid plans coming soon!",
+        "<Group Therapy> EU: New guild forming! Join our community of mature and friendly raiders. We're building a relaxed environment with raid plans on the horizon.",
+        "<Group Therapy> EU: New guild forming! Join our friendly and mature community. We're building a relaxed raiding environment with a focus on fun and friendship.",
         "<Group Therapy> EU: Tired of the usual guild drama? <Group Therapy> EU is forming! We're a friendly and mature guild with raid plans in the works. Come join the fun!",
+        "<Group Therapy> EU: Tired of the usual guild drama? Join <Group Therapy> EU! We're a new guild forming with a focus on friendly raiding and mature humor.",
+        "<Group Therapy> EU: Tired of the usual guild drama? <Group Therapy> EU is forming! We're a friendly and mature guild with raid plans in the works. Expect plenty of laughs along the way.",
 
         "<Group Therapy> is forming! Join our new EU guild for a relaxed and friendly atmosphere. No drama, no stress. Just good old-fashioned fun! All classes and specs welcome.",
         "<Group Therapy> EU is recruiting! Join our new guild and make friends while we build a community. Raiding plans in the works! No experience required.",
@@ -1593,8 +1574,7 @@ function GuildRecruitment()
         -- "<Group Therapy> EU: Looking for a guild that balances serious raiding with plenty of laughs? Look no further! <Group Therapy> EU offers a supportive community and a fun raiding environment.",
         -- "<Group Therapy> EU: Tired of toxic guilds? Join <Group Therapy> EU and experience a guild where everyone is welcome and valued.",
         -- "<Group Therapy> EU: We're a guild that believes in having fun while progressing. If you're looking for a balance of both, look no further.",
-        
-        
+
     }
 
     -- The zones we want to recruit in.
@@ -1647,12 +1627,16 @@ function GuildRecruitment()
         ["Orgrimmar"] = true,
         ["Thunder Bluff"] = true,
         ["Stormwind City"] = true,
+        ["Ironforge"] = true,
 
         -- Dungeons where we don't want to recruit in.
         ["Blackrock Spire"] = "Nope",
         ["Scholomance"] = "Nope",
         ["Stratholme"] = "Nope",
         ["Dire Maul"] = "Nope",
+        ["Blackrock Depths"] = "Nope",
+        ["Gnomeregan"] = "Nope",
+        ["Maraudon"] = "Nope",
 
         -- Battlegrounds where we don't want to recruit in.
         ["Warsong Gulch"] = "Nope",
@@ -1711,9 +1695,9 @@ function GuildRecruitment()
                 for zoneName, _ in pairs(NewZones) do
                     if (not Zones[zoneName]) then
                         -- DEFAULT_CHAT_FRAME:AddMessage(zoneName .. " not found in our list, maybe we don't recruit here ?");
-                        NewZones[zoneName] = "Unknow zone, find out of if we want to recruit here."
+                        NewZones[zoneName] = "Unknow zone, we need to find out if we want to recruit here or not."
                     else
-                        NewZones[zoneName] = "Found in addon."
+                        NewZones[zoneName] = "Found."
                     end
                 end
             end
