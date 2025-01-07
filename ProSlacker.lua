@@ -106,7 +106,7 @@ function SlashCmdList.PROSLACKER(msg)
     elseif (string.sub(string.upper(msg), 1, 3) == "BUY") then
 
         -- Do we have a shopping table, if not then we create it.
-        if (not ShoppingDB) then
+        if (not ShoppingDB) or (not type(ShoppingDB) == "table") then
             ShoppingDB = {}
         end
 
@@ -179,7 +179,7 @@ function SlashCmdList.PROSLACKER(msg)
     elseif (string.sub(string.upper(msg), 1, 7) == "STOPBUY") then
 
         -- Do we have a shopping table, if not then we create it.
-        if (not ShoppingDB) then
+        if (not ShoppingDB) or (not type(ShoppingDB) == "table") then
             ShoppingDB = {}
         end
 
@@ -235,6 +235,26 @@ function SlashCmdList.PROSLACKER(msg)
 
 -- ====================================================================================================
 
+    -- List all there have been added to ShoppingDB.
+    elseif (string.sub(string.upper(msg), 1, 7) == "LISTBUY") then
+
+        -- Do we have a shopping table, if not then we create it.
+        if (not ShoppingDB) or (not type(ShoppingDB) == "table") then
+            ShoppingDB = {}
+        end
+
+        -- Print the list.
+        if next(ShoppingDB) == nil then 
+            DEFAULT_CHAT_FRAME:AddMessage("You have nothing on your list.");
+        else
+            DEFAULT_CHAT_FRAME:AddMessage("Here is your shopping list:");
+            for item, count in pairs(ShoppingDB) do
+                DEFAULT_CHAT_FRAME:AddMessage("|cffff0000" .. "- " .. "|r" .. count .. " x " .. item);
+            end
+        end
+
+-- ====================================================================================================
+
     elseif (string.sub(string.upper(msg), 1, 4) == "INFO") then
         -- Get some info from the TOC file
         local intVersion = GetAddOnMetadata(AddonName, "Version");
@@ -265,6 +285,7 @@ function SlashCmdList.PROSLACKER(msg)
         DEFAULT_CHAT_FRAME:AddMessage("Both /proslacker or /ps can be used.");
         DEFAULT_CHAT_FRAME:AddMessage("/ps buy - Add items to the auto shopping list.");
         DEFAULT_CHAT_FRAME:AddMessage("/ps stopbuy - Remove items from the auto shopping list.");
+        DEFAULT_CHAT_FRAME:AddMessage("/ps listbuy - Show what is on the auto shopping list.");
         DEFAULT_CHAT_FRAME:AddMessage("/ps info - Display addon information.");
         DEFAULT_CHAT_FRAME:AddMessage("/ps debug - Enable or disable debugging.");
         DEFAULT_CHAT_FRAME:AddMessage("/ps help - Show this help message.");
@@ -332,6 +353,7 @@ f:SetScript("OnEvent", function()
     if (event == "ADDON_LOADED") and (arg1 == AddonName) then
         
         f:UnregisterEvent("ADDON_LOADED");
+-- ====================================================================================================
     -- Fire when we get a red error message on the screen.
     elseif (event == "UI_ERROR_MESSAGE") then
         local errorName = arg1
@@ -352,19 +374,24 @@ f:SetScript("OnEvent", function()
                 end
             end
         end
+-- ====================================================================================================
         -- If the error message is not in the black list, then we forward it.
         if (not BlackListErrors[errorName]) then
             UIErrorsFrame:AddMessage(errorName, 1, .1, .1)
         end
+-- ====================================================================================================
     -- Did we open a vendor window ?
     elseif (event == "MERCHANT_SHOW") then
         BuyItemFromVendor()
+-- ====================================================================================================
     -- Did we close a vendor window ?
     elseif (event == "MERCHANT_CLOSED") then
         
+-- ====================================================================================================
     -- Did the zone change
     elseif (event == "ZONE_CHANGED_NEW_AREA") then
         RegisterZone()
+-- ====================================================================================================
     -- 
     elseif (event == "CHAT_MSG_SYSTEM") then
         -- Check the chat if we are AFK or DND
@@ -1321,6 +1348,10 @@ function TauntTarget()
             CastSpellByName("Taunt");
         elseif (playerClass == "DRUID") then
             CastSpellByName("Growl");
+        -- elseif (playerClass == "PALADIN") then
+            
+        -- elseif (playerClass == "SHAMAN") then
+            
         else
             DEFAULT_CHAT_FRAME:AddMessage("You are not playing a class there can't taunt.");
         end
@@ -1513,7 +1544,6 @@ function RegisterZone()
     -- 
     if (CurrentNewZone ~= nil) and (not NewZones[CurrentNewZone]) then
         NewZones[CurrentNewZone] = "Unknown"
-        -- DEFAULT_CHAT_FRAME:AddMessage("New zone found — " .. CurrentNewZone);
     end
 
 end
@@ -1577,7 +1607,7 @@ function GuildRecruitment()
 
     }
 
-    -- The zones we want to recruit in.
+    -- All the zones in the game.
     local Zones = {
         -- Original zones from WoW Vanilla.
         ["Dun Morogh"] = true,
@@ -1629,7 +1659,7 @@ function GuildRecruitment()
         ["Stormwind City"] = true,
         ["Ironforge"] = true,
 
-        -- Dungeons where we don't want to recruit in.
+        -- Dungeons where we don't want to recruit.
         ["Blackrock Spire"] = "Nope",
         ["Scholomance"] = "Nope",
         ["Stratholme"] = "Nope",
@@ -1637,8 +1667,9 @@ function GuildRecruitment()
         ["Blackrock Depths"] = "Nope",
         ["Gnomeregan"] = "Nope",
         ["Maraudon"] = "Nope",
+        ["The Temple of Atal'Hakkar"] = "Nope",
 
-        -- Battlegrounds where we don't want to recruit in.
+        -- Battlegrounds where we don't want to recruit.
         ["Warsong Gulch"] = "Nope",
 
         -- New zones in Turtle WoW.
@@ -1647,13 +1678,16 @@ function GuildRecruitment()
         ["Gillijim's Isle"] = true,
         ["Hyjal"] = true,
         ["Winter Veil Vale"] = true,
+        ["Blackstone Island"] = true,
+        ["Amani'Alor"] = true,
 
         --  New citys in Turtle WoW.
+        
 
-        -- New dungeons in Turtle WoW.
+        -- New dungeons in Turtle WoW where we don't want to recruit.
         ["Stormwind Vault"] = "Nope",
 
-        -- New battlegrounds in Turtle WoW.
+        -- New battlegrounds in Turtle WoW where we don't want to recruit.
         
 
     }
@@ -1694,8 +1728,7 @@ function GuildRecruitment()
                 -- Check all the zones that we have found also is in the zones we want to recruit in.
                 for zoneName, _ in pairs(NewZones) do
                     if (not Zones[zoneName]) then
-                        -- DEFAULT_CHAT_FRAME:AddMessage(zoneName .. " not found in our list, maybe we don't recruit here ?");
-                        NewZones[zoneName] = "Unknow zone, we need to find out if we want to recruit here or not."
+                        NewZones[zoneName] = "Unknow zone, so if your the one updating this addon, then you need to make a dession about this zone. :)"
                     else
                         NewZones[zoneName] = "Found."
                     end
