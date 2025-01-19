@@ -1668,6 +1668,7 @@ function GuildRecruitment()
         ["Gnomeregan"] = "Nope",
         ["Maraudon"] = "Nope",
         ["The Temple of Atal'Hakkar"] = "Nope",
+        ["Ragefire Chasm"] = "Nope",
 
         -- Battlegrounds where we don't want to recruit.
         ["Warsong Gulch"] = "Nope",
@@ -1680,6 +1681,7 @@ function GuildRecruitment()
         ["Winter Veil Vale"] = true,
         ["Blackstone Island"] = true,
         ["Amani'Alor"] = true,
+        ["Scarlet Enclave"] = true,
 
         --  New citys in Turtle WoW.
         
