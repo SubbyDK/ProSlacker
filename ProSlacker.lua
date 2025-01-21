@@ -331,6 +331,7 @@ local BlackListErrors = {
   [SPELL_FAILED_NOT_MOUNTED] = true,            -- You are mounted.
   [SPELL_FAILED_NOT_ON_TAXI] = true,            -- You are in flight.
   [ERR_UNIT_NOT_FOUND] = true,                  -- Unknown Unit.
+  [INTERRUPTED] = true,                         -- Interrupted.
 }
 
 -- ====================================================================================================
@@ -1520,10 +1521,65 @@ end
 
 function WarlockRotation()
 
+-- ########## The macro ##########
+-- /run -- CastSpellByName("Shadow Bolt")
+-- /script WarlockRotation()
+
+    -- Do we cast fishing and don't fight ?
+    if (FishingPoleEquipped() == true) then
+        CastSpellByName("Fishing");
+        return;
+    end
+
+    -- Find a new enermy we can attack.
+    if (TargetNewEnemy() == false) then
+        return;
+    end
+
+    -- Er vi i combat ?
+    if (not PlayerFrame.inCombat) then
+        -- Start attact
+        AttackTarget()
+    end
+
     if (UnitHealth("player") / UnitHealthMax("player") > 0.9) and (UnitMana("player") / UnitManaMax("player") < 0.8) then
-        CastSpellByName("Life Tap");
+        if (CheckIfSpellIsKnown("Life Tap", 0) == true) then
+            CastSpellByName("Life Tap");
+        else
+            CastSpellByName("Shadow Bolt");
+        end
     else
         CastSpellByName("Shadow Bolt");
+    end
+
+    -- Pet attack
+    PetAttack(target)
+
+    -- Delete Soul Shards so we don't drown in them.
+    SoulShardDelete(84)
+end
+
+-- ====================================================================================================
+-- =                                 Auto delete Warlock Soul Shards.                                 =
+-- ====================================================================================================
+
+function SoulShardDelete(int)
+
+    -- Count how many Soul Shards we have.
+    local ShardCount = 0
+    for bag = 4, 0, -1 do
+        for slotNum = GetContainerNumSlots(bag), 1, -1 do
+            local itemLink = GetContainerItemLink(bag, slotNum)
+            if itemLink and string.find(itemLink, "Soul Shard") then
+                local _, count = GetContainerItemInfo(bag, slotNum)
+                ShardCount = ShardCount + count
+                -- Do we have more shards then we want to have ?
+                if (ShardCount > int) then
+                    PickupContainerItem(bag, slotNum)
+                    DeleteCursorItem()
+                end
+            end
+        end
     end
 
 end
