@@ -1707,6 +1707,7 @@ function GuildRecruitment()
         ["Deadwind Pass"] = true,
         ["Moonglade"] = true,
         ["Silithus"] = true,
+        ["Gates of Ahn'Qiraj"] = true,
 
         -- Citys.
         ["Undercity"] = true,
@@ -1725,6 +1726,7 @@ function GuildRecruitment()
         ["Maraudon"] = "Nope",
         ["The Temple of Atal'Hakkar"] = "Nope",
         ["Ragefire Chasm"] = "Nope",
+        ["Ruins of Ahn'Qiraj"] = "Nope",
 
         -- Battlegrounds where we don't want to recruit.
         ["Warsong Gulch"] = "Nope",
