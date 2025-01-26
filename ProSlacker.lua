@@ -428,7 +428,75 @@ f:SetScript("OnUpdate", function()
         GuildRecruitment()
     end
 
+    -- Her and mining tracker
+    local TrackTime
+    -- 
+    if (not TrackTime) or ((TrackTime - GetTime()) > 1) then
+        HerbAndMining()
+        TrackTime = GetTime()
+    end
+
 end)
+
+-- ====================================================================================================
+-- =                                     Herb and mining switcher                                     =
+-- ====================================================================================================
+
+function HerbAndMining()
+
+    local KnowMining = false
+    local KnowHerbalism = false
+    local MiningOn = false
+    local HerbalismOn = false
+
+    -- Do we know Mining ?
+    if (CheckIfSpellIsKnown(spellName, rank) == true) then
+        KnowMining = true
+        DEFAULT_CHAT_FRAME:AddMessage("We know mining.");
+    end
+
+    -- Do we know herbalism ?
+    if (CheckIfSpellIsKnown(spellName, rank) == true) then
+        KnowHerbalism = true
+        DEFAULT_CHAT_FRAME:AddMessage("We know herbalism.");
+    end
+
+    -- Stop if we don't know any of the spells.
+    if (KnowMining == false) and (KnowHerbalism == false) then
+        DEFAULT_CHAT_FRAME:AddMessage("We don't know any tracking spells.");
+        return;
+    end
+
+    -- Loop through all our buffs and look for the tracker icon.
+    for i = 1, 64, 1 do
+        local TrackBuff = UnitBuff("player",i);
+        -- Is it Juju Power we found ?
+        if ((TrackBuff ~= nil) and (string.find(TrackBuff,"Interface\\Icons\\INV_Misc_MonsterScales_11"))) then
+            MiningOn = true
+        elseif ((TrackBuff ~= nil) and (string.find(TrackBuff,"Interface\\Icons\\INV_Misc_MonsterScales_11"))) then
+            HerbalismOn = true
+        end
+    end
+
+    -- If we know both mining and herbalism.
+    if (KnowMining == true) and (KnowHerbalism == true) then
+        -- What buff do we have now ?
+        if (HerbalismOn == true) then
+            CastSpellByName("Find Minerals");
+        elseif (MiningOn == true) then
+            CastSpellByName("Find Herbs");
+        else
+            CastSpellByName("Find Minerals");
+        end
+    -- If we only know mining.
+    elseif (KnowMining == true) and (MiningOn == false) then
+        CastSpellByName("Find Minerals");
+    -- If we only know herbalism.
+    elseif (KnowHerbalism == true) and (HerbalismOn == false) then
+        CastSpellByName("Find Herbs");
+    end
+
+end
 
 -- ====================================================================================================
 -- =                                      Auto shop from vendor.                                      =
