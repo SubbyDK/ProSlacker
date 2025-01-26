@@ -1542,6 +1542,23 @@ function WarlockRotation()
         AttackTarget()
     end
 
+    -- Locals
+    local DemonArmor = false
+    -- Loop through own buff.
+    for i = 1, 64 do
+        -- Did we find a buff and it it the one we are looking for ?
+        if (UnitBuff("player",i)) and (string.find(UnitBuff("player", i), "Interface\\Icons\\Spell_Shadow_RagingScream")) then
+            -- Set to true.
+            DemonArmor = true
+        end
+    end
+
+    -- Buff if we don't have it already.
+    if DemonArmor ~= true then
+        CastSpellByName("Demon Armor")
+    end
+
+
     if (UnitHealth("player") / UnitHealthMax("player") > 0.9) and (UnitMana("player") / UnitManaMax("player") < 0.8) then
         if (CheckIfSpellIsKnown("Life Tap", 0) == true) then
             CastSpellByName("Life Tap");
@@ -1727,6 +1744,7 @@ function GuildRecruitment()
         ["The Temple of Atal'Hakkar"] = "Nope",
         ["Ragefire Chasm"] = "Nope",
         ["Ruins of Ahn'Qiraj"] = "Nope",
+        ["Molten Core"] = "Nope",
 
         -- Battlegrounds where we don't want to recruit.
         ["Warsong Gulch"] = "Nope",
@@ -1740,6 +1758,7 @@ function GuildRecruitment()
         ["Blackstone Island"] = true,
         ["Amani'Alor"] = true,
         ["Scarlet Enclave"] = true,
+        ["Caverns of Time"] = true,
 
         --  New citys in Turtle WoW.
         
