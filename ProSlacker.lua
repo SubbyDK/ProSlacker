@@ -11,6 +11,7 @@ local LogInTime = GetTime()                     --
 local RecruitTime = GetTime()                   -- 
 local StopGuildRecruit = false                  -- For stopping recruitment if we are AFK or DND
 local strDND = false                            -- To check if we are DND or not.
+local TrackTime = GetTime()                     -- Used for the timer for herb and mining tracker.
 -- ============================================== Druid. ==============================================
 
 -- ============================================== Hunter ==============================================
@@ -428,10 +429,8 @@ f:SetScript("OnUpdate", function()
         GuildRecruitment()
     end
 
-    -- Her and mining tracker
-    local TrackTime
     -- 
-    if (not TrackTime) or ((TrackTime - GetTime()) > 1) then
+    if ((TrackTime + 10) < GetTime()) then
         HerbAndMining()
         TrackTime = GetTime()
     end
@@ -444,56 +443,58 @@ end)
 
 function HerbAndMining()
 
+    -- Are we dead ? If so we do nothing.
+    if (UnitIsDeadOrGhost("player")) then
+        return;
+    end
+
     local KnowMining = false
     local KnowHerbalism = false
     local MiningOn = false
     local HerbalismOn = false
 
     -- Do we know Mining ?
-    if (CheckIfSpellIsKnown(spellName, rank) == true) then
+    if (CheckIfSpellIsKnown("Find Minerals", 0) == true) then
         KnowMining = true
-        DEFAULT_CHAT_FRAME:AddMessage("We know mining.");
     end
 
     -- Do we know herbalism ?
-    if (CheckIfSpellIsKnown(spellName, rank) == true) then
+    if (CheckIfSpellIsKnown("Find Herbs", 0) == true) then
         KnowHerbalism = true
-        DEFAULT_CHAT_FRAME:AddMessage("We know herbalism.");
     end
 
     -- Stop if we don't know any of the spells.
     if (KnowMining == false) and (KnowHerbalism == false) then
-        DEFAULT_CHAT_FRAME:AddMessage("We don't know any tracking spells.");
         return;
     end
 
-    -- Loop through all our buffs and look for the tracker icon.
-    for i = 1, 64, 1 do
-        local TrackBuff = UnitBuff("player",i);
-        -- Is it Juju Power we found ?
-        if ((TrackBuff ~= nil) and (string.find(TrackBuff,"Interface\\Icons\\INV_Misc_MonsterScales_11"))) then
-            MiningOn = true
-        elseif ((TrackBuff ~= nil) and (string.find(TrackBuff,"Interface\\Icons\\INV_Misc_MonsterScales_11"))) then
-            HerbalismOn = true
-        end
+    -- Are we already tracking mines ?
+    if (GetTrackingTexture() == "Interface\\Icons\\Spell_Nature_Earthquake") then
+        MiningOn = true
     end
 
-    -- If we know both mining and herbalism.
+    -- Are we already tracking herbs ?
+    if (GetTrackingTexture() == "Interface\\Icons\\INV_Misc_Flower_02") then
+        HerbalismOn = true
+    else
+        --DEFAULT_CHAT_FRAME:AddMessage(GetTrackingTexture())
+    end
+
+    -- Check if it's something else we are tracking.
+
+    -- Inform that we are not tracking anything.
     if (KnowMining == true) and (KnowHerbalism == true) then
-        -- What buff do we have now ?
-        if (HerbalismOn == true) then
-            CastSpellByName("Find Minerals");
-        elseif (MiningOn == true) then
-            CastSpellByName("Find Herbs");
-        else
-            CastSpellByName("Find Minerals");
+        if (MiningOn == false) and (HerbalismOn == false) then
+            DEFAULT_CHAT_FRAME:AddMessage("|cffff0000" .. "Find Minerals or Find Herbs are not enabled." .. "|r")
         end
-    -- If we only know mining.
-    elseif (KnowMining == true) and (MiningOn == false) then
-        CastSpellByName("Find Minerals");
-    -- If we only know herbalism.
-    elseif (KnowHerbalism == true) and (HerbalismOn == false) then
-        CastSpellByName("Find Herbs");
+    elseif (KnowMining == true) and (KnowHerbalism == false) then
+        if (MiningOn == false) then
+            DEFAULT_CHAT_FRAME:AddMessage("|cffff0000" .. "Find Minerals are not enabled." .. "|r")
+        end
+    elseif (KnowMining == false) and (KnowHerbalism == true) then
+        if (HerbalismOn == false) then
+            DEFAULT_CHAT_FRAME:AddMessage("|cffff0000" .. "Find Herbs are not enabled." .. "|r")
+        end
     end
 
 end
@@ -1813,6 +1814,7 @@ function GuildRecruitment()
         ["Ragefire Chasm"] = "Nope",
         ["Ruins of Ahn'Qiraj"] = "Nope",
         ["Molten Core"] = "Nope",
+        ["Onyxia's Lair"] = "Nope",
 
         -- Battlegrounds where we don't want to recruit.
         ["Warsong Gulch"] = "Nope",
@@ -1827,12 +1829,14 @@ function GuildRecruitment()
         ["Amani'Alor"] = true,
         ["Scarlet Enclave"] = true,
         ["Caverns of Time"] = true,
+        ["Thalassian Highlands"] = true,
 
         --  New citys in Turtle WoW.
-        
+        ["Alah'Thalas"] = true,
 
         -- New dungeons in Turtle WoW where we don't want to recruit.
         ["Stormwind Vault"] = "Nope",
+        ["Tower of Karazhan"] = "Nope",
 
         -- New battlegrounds in Turtle WoW where we don't want to recruit.
         
