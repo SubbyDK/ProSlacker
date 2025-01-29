@@ -49,7 +49,7 @@ local PrintTime = nil                           --
 -- ============================================= General. =============================================
 
 local RunRecruit = true                         -- Du we want to run the recruitment ?
-local RecruitmentRunTimer = 900                 -- How often we want to run the recruitment. (in seconds)
+local RecruitmentRunTimer = 1800                -- How often we want to run the recruitment. (in seconds)
 local Debug = false                             -- Run debug for the addon, can also be done ingame /ps debug
 
 -- ============================================== Druid. ==============================================
@@ -1423,7 +1423,7 @@ function TauntTarget()
         -- elseif (playerClass == "SHAMAN") then
             
         else
-            DEFAULT_CHAT_FRAME:AddMessage("You are not playing a class there can't taunt.");
+            DEFAULT_CHAT_FRAME:AddMessage("You are not playing a class there can taunt.");
         end
     end
 end
@@ -1794,6 +1794,7 @@ function GuildRecruitment()
         ["Moonglade"] = true,
         ["Silithus"] = true,
         ["Gates of Ahn'Qiraj"] = true,
+        ["The Great Sea"] = true,
 
         -- Citys.
         ["Undercity"] = true,
@@ -1801,6 +1802,7 @@ function GuildRecruitment()
         ["Thunder Bluff"] = true,
         ["Stormwind City"] = true,
         ["Ironforge"] = true,
+        ["Darnassus"] = true,
 
         -- Dungeons where we don't want to recruit.
         ["Blackrock Spire"] = "Nope",
