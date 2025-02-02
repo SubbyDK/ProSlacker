@@ -48,7 +48,7 @@ local PrintTime = nil                           --
 
 -- ============================================= General. =============================================
 
-local RunRecruit = true                         -- Du we want to run the recruitment ?
+local RunRecruit = false                        -- Du we want to run the recruitment ?
 local RecruitmentRunTimer = 1800                -- How often we want to run the recruitment. (in seconds)
 local Debug = false                             -- Run debug for the addon, can also be done ingame /ps debug
 
@@ -1572,11 +1572,11 @@ function DruidDPS()
         end
     end
     -- We did not find Mark of the Wild, so we cast it.
-    if (not MotW) then
+    if (not MotW) and (CheckIfSpellIsKnown("Mark of the Wild", 0) == true) then
         CastSpellByName("Mark of the Wild");
     end
     -- We did not find Thorns, so we cast it.
-    if (not Thorns) then
+    if (not Thorns) and (CheckIfSpellIsKnown("Thorns", 0) == true) then
         CastSpellByName("Thorns");
     end
 
@@ -1891,6 +1891,17 @@ function GuildRecruitment()
     end
 
 end
+
+-- ====================================================================================================
+-- =                         Auto invite Hardcore players back after they die                         =
+-- ====================================================================================================
+
+function HardcoreInvite()
+
+    --GuildInvite(playername)
+
+end
+
 
 -- ====================================================================================================
 -- =                                            TEST AREA.                                            =
