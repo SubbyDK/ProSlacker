@@ -1046,7 +1046,7 @@ function CheckIfSpellIsKnown(spellName, rank)
                     DEFAULT_CHAT_FRAME:AddMessage("currentSpellRank was not nil, it was: " .. currentSpellRank)
                 end
                 -- Some spells don't have a rank, if that is the case here, then we change it to 0
-                if (currentSpellRank == nil) or (currentSpellRank == "") then
+                if (currentSpellRank == nil) or (currentSpellRank == "") or (currentSpellRank == "Shapeshift") then
                     currentSpellRank = 0
                 end
                 -- The reason we use <= and not == here is that if we know rank 4 we also know rank 2.
@@ -1406,19 +1406,40 @@ function TauntTarget()
 -- /script TauntTarget()
 
     -- Get name of target of target, player name and player class.
-    local target = UnitName("target")
-    local targetOfTarget = UnitName("targettarget")
-    local myName = UnitName("player")
-    local playerClass = UnitClass("player")
+    local target = UnitName("target");
+    local targetOfTarget = UnitName("targettarget");
+    local myName = UnitName("player");
+    local playerClass = UnitClass("player");
+
+    -- Are we a Druid there need to change form ?
+    if (playerClass == "Druid") then
+        -- Are we in bear form ?
+        local Bear = false
+        -- Loop gennem egene buff
+        for i = 1, 64 do
+            if (UnitBuff("player",i)) then
+                -- DEFAULT_CHAT_FRAME:AddMessage(UnitBuff("player",i));
+            end
+            -- Is it Mark of the Wild we found ?
+            if UnitBuff("player",i) and string.find(UnitBuff("player", i), "Interface\\Icons\\Ability_Racial_BearForm") then
+                Bear = true
+            end
+        end
+        -- We did not find Mark of the Wild, so we cast it.
+        if (not Bear) and (CheckIfSpellIsKnown("Bear Form", 0) == true) then
+            CastSpellByName("Bear Form");
+        end
+    end
 
     -- If the name of target of target is not my name, then taunt the target.
     if (targetOfTarget) and (targetOfTarget ~= myName) then
         -- Are we Warrior or Druid ?
-        if (playerClass == "WARRIOR") then
+        if (playerClass == "Warrior") then
             CastSpellByName("Taunt");
-        elseif (playerClass == "DRUID") then
+            DEFAULT_CHAT_FRAME:AddMessage("Taunt used.");
+        elseif (playerClass == "Druid") then
             CastSpellByName("Growl");
-        -- elseif (playerClass == "PALADIN") then
+        -- elseif (playerClass == "Paladin") then
             
         -- elseif (playerClass == "SHAMAN") then
             
@@ -1581,6 +1602,154 @@ function DruidDPS()
     end
 
     CastSpellByName("Wrath");
+
+end
+
+-- ====================================================================================================
+-- =                                       Druid bear rotation.                                       =
+-- ====================================================================================================
+
+function DruidTank()
+
+-- ########## The macro ##########
+-- /run -- CastSpellByName("Maul")
+-- /script DruidTank()
+
+
+    -- Find a new enermy we can attack.
+    if (TargetNewEnemy() == false) then
+        return;
+    end
+
+    -- Er vi i combat ?
+    if (not PlayerFrame.inCombat) then
+        -- Start attact
+        AttackTarget()
+    end
+
+    -- Locals
+    local MotW = false
+    local Thorns = false
+    -- Loop gennem egene buff
+    for i = 1, 64 do
+        if (UnitBuff("player",i)) then
+            -- DEFAULT_CHAT_FRAME:AddMessage(UnitBuff("player",i));
+        end
+        -- Is it Mark of the Wild we found ?
+        if UnitBuff("player",i) and string.find(UnitBuff("player", i), "Interface\\Icons\\Spell_Nature_Regeneration") then
+            MotW = true
+        end
+        -- Is it Thorns we found ?
+        if UnitBuff("player",i) and string.find(UnitBuff("player", i), "Interface\\Icons\\Spell_Nature_Thorns") then
+            Thorns = true
+        end
+    end
+    -- We did not find Mark of the Wild, so we cast it.
+    if (not MotW) and (CheckIfSpellIsKnown("Mark of the Wild", 0) == true) then
+        --CastSpellByName("Mark of the Wild");
+    end
+    -- We did not find Thorns, so we cast it.
+    if (not Thorns) and (CheckIfSpellIsKnown("Thorns", 0) == true) then
+        --CastSpellByName("Thorns");
+    end
+
+    CastSpellByName("Maul");
+
+end
+
+-- ====================================================================================================
+-- =                                        Druid cat rotation                                        =
+-- ====================================================================================================
+
+function DruidCat()
+
+-- ########## The macro ##########
+-- /run -- CastSpellByName("Claw")
+-- /script DruidCat()
+
+
+    -- Find a new enermy we can attack.
+    if (TargetNewEnemy() == false) then
+        return;
+    end
+
+    -- Set some locals
+    local partyMembers = GetNumPartyMembers()   -- Get group numbers
+
+    -- Do we use Juju Power ?
+    if (RogueJujuPower == true) and (partyMembers > 0) then
+        -- Set locals
+        local Juju = false
+        -- Loop through all our buffs and look for the Juju Power icon.
+        for i = 1, 64, 1 do
+            local JujuBuff = UnitBuff("player",i);
+            -- Is it Juju Power we found ?
+            if ((JujuBuff ~= nil) and (string.find(JujuBuff,"Interface\\Icons\\INV_Misc_MonsterScales_11"))) then
+                Juju = true
+            end
+        end
+        -- Do we need to use Juju Power ?
+        if (Juju == false) then
+            -- Do we have any Juju Power in our bags ?
+            for bag = 0, 4 do
+                for slotNum = 1, GetContainerNumSlots(bag) do
+                -- for slotNum = GetContainerNumSlots(bag), 1, -1 do
+                    local itemLink = GetContainerItemLink(bag, slotNum)
+                    if itemLink and string.find(string.lower(itemLink), "juju power") then
+                        -- We found one, so we use it.
+                        UseContainerItem(bag, slotNum)
+                    end
+                end
+            end
+        end
+    end
+
+    local icon, name, StealthActive, castable = GetShapeshiftFormInfo(2);
+    -- 
+    if (StealthActive == 1) then
+        -- 
+        if (CheckIfSpellIsKnown("Cheap Shot", 0) == true) then
+            CastSpellByName("Cheap Shot");
+        else
+            CastSpellByName("Claw");
+        end
+    end
+
+    local SnD = false
+    local db
+    -- Loop through all our buffs and look for the Slice and Dice icon.
+    for i = 1, 64, 1 do
+        db = UnitBuff("player",i) 
+        -- Is it Slice and Dice we found ?
+        if ((db ~= nil) and (string.find(db,"Interface\\Icons\\Ability_Rogue_SliceDice"))) then
+            SnD = true
+        end
+    end
+    -- Do our target have 5 combo points ?
+    if (GetComboPoints("target") == 5) then
+        CastSpellByName("Rip");
+    -- Do we have 3 or more combo points and do target have 20% or less health left ? 
+    elseif ((GetComboPoints("target") >= 3) and (UnitHealth("target") / UnitHealthMax("target") < 0.2)) then
+        CastSpellByName("Rip");
+    -- Is there 0 combo point on target ?
+    elseif (GetComboPoints("target") == 0) then
+        CastSpellByName("Claw");
+    else
+        -- Have we learned Slice and Dice yet ?
+        if (CheckIfSpellIsKnown("Slice and Dice", 0) == true) then
+            CastSpellByName("Slice and Dice");
+        else
+            CastSpellByName("Claw");
+        end
+    end
+
+    -- Start auto attack if we are not stealth.
+    if (StealthActive ~= 1) then
+        -- Make sure we start auto attack, even if we don't have enough energy, but only if we are not stealth.
+        if (not PlayerFrame.inCombat) then 
+            AttackTarget()
+        end
+    end
 
 end
 
