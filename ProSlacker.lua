@@ -1735,7 +1735,7 @@ function DruidCat()
     elseif (GetComboPoints("target") == 0) then
         CastSpellByName("Claw");
     else
-        -- Have we learned Slice and Dice yet ?
+        -- Have we learned 
         if (CheckIfSpellIsKnown("Slice and Dice", 0) == true) then
             CastSpellByName("Slice and Dice");
         else
