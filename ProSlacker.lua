@@ -12,6 +12,7 @@ local RecruitTime = GetTime()                   --
 local StopGuildRecruit = false                  -- For stopping recruitment if we are AFK or DND
 local strDND = false                            -- To check if we are DND or not.
 local TrackTime = GetTime()                     -- Used for the timer for herb and mining tracker.
+local intAutoAttack = false                     -- Used to find the AutoAttack number button.
 -- ============================================== Druid. ==============================================
 
 -- ============================================== Hunter ==============================================
@@ -438,6 +439,37 @@ f:SetScript("OnUpdate", function()
 end)
 
 -- ====================================================================================================
+-- =                                        Start auto attack.                                        =
+-- ====================================================================================================
+
+function AutoAttackStart()
+
+    -- Find the english player class.
+    _, EnglishClass = UnitClass("player");
+
+    -- Loop through all the action buttons.
+    for i = 1, 172 do
+        -- Get the texture of the button.
+        local Texture = GetActionTexture(i)
+        -- Is the slot an attack action and should flash red during combat.
+        if (IsAttackAction(i)) and (EnglishClass ~= "HUNTER") then
+            -- Is the slot active ? (IsCurrentAction() are for melee and IsAutoRepeatAction() are for shoot (Hunter or wand))
+            if (not IsCurrentAction(i)) then
+                -- If not in action, then activate it.
+                CastSpellByName("Attack");
+            end
+        end
+        -- Hunter acting a bit different as we have range and melee attack, so that we take here.
+        if (EnglishClass == "HUNTER") and (IsAttackAction(i)) and (CheckInteractDistance("target", 3)) and (not IsCurrentAction(i)) then
+            CastSpellByName("Attack");
+        elseif (Texture) and (EnglishClass == "HUNTER") and (not IsAutoRepeatAction(i)) and (string.find(Texture, "Weapon")) then
+            CastSpellByName("Auto Shot");
+        end
+    end
+
+end
+
+-- ====================================================================================================
 -- =                                     Herb and mining switcher                                     =
 -- ====================================================================================================
 
@@ -668,16 +700,13 @@ function HunterAutoAttack()
         return;
     end
 
+    -- Start auto attack.
+    AutoAttackStart()
+
     if (CheckInteractDistance("target", 3)) then
-        if (not PlayerFrame.inCombat) then
-            AttackTarget()
-        end
         CastSpellByName("Mongoose Bite")
         CastSpellByName("Raptor Strike")
     else
-        if (not IsAutoRepeatAction(4)) then
-            CastSpellByName("Auto Shot")
-        end
         CastSpellByName("Arcane Shot")
     end
     PetAttack(target)
@@ -821,9 +850,7 @@ function RogueAttack()
     -- Start auto attack if we are not stealth.
     if (StealthActive ~= 1) then
         -- Make sure we start auto attack, even if we don't have enough energy, but only if we are not stealth.
-        if (not PlayerFrame.inCombat) then 
-            AttackTarget()
-        end
+        AutoAttackStart()
     end
 
     -- Do we even know poison yet ? No reason to spam that we need it, if we can't make it yet.
@@ -1192,12 +1219,8 @@ function PaladinAttack()
         return;
     end
 
-    -- 
-    --for i = 1, 120 do
-        if not IsCurrentAction(4) then
-            CastSpellByName("Attack")
-        end
-    --end
+    -- Start auto attack.
+    AutoAttackStart()
 
     -- Locals
     local HasSealBuff = false
@@ -1470,11 +1493,8 @@ function WarriorDPS(at1, at2, at3, at4, at5, at6, at7, at8, at9)
         return;
     end
 
-    -- Er vi i combat ?
-    if (not PlayerFrame.inCombat) then
-        -- Start attact
-        AttackTarget()
-    end
+    -- Start auto attack.
+    AutoAttackStart()
 
     -- Locals
     local hasBuff = false
@@ -1569,11 +1589,8 @@ function DruidDPS()
         return;
     end
 
-    -- Er vi i combat ?
-    if (not PlayerFrame.inCombat) then
-        -- Start attact
-        AttackTarget()
-    end
+    -- Start auto attack.
+    AutoAttackStart()
 
     -- Locals
     local MotW = false
@@ -1621,11 +1638,8 @@ function DruidTank()
         return;
     end
 
-    -- Er vi i combat ?
-    if (not PlayerFrame.inCombat) then
-        -- Start attact
-        AttackTarget()
-    end
+    -- Start auto attack.
+    AutoAttackStart()
 
     -- Locals
     local MotW = false
@@ -1667,7 +1681,6 @@ function DruidCat()
 -- /run -- CastSpellByName("Claw")
 -- /script DruidCat()
 
-
     -- Find a new enermy we can attack.
     if (TargetNewEnemy() == false) then
         return;
@@ -1675,17 +1688,22 @@ function DruidCat()
 
     -- Set some locals
     local partyMembers = GetNumPartyMembers()   -- Get group numbers
+    local StealthActive = false
 
     -- Do we use Juju Power ?
     if (RogueJujuPower == true) and (partyMembers > 0) then
         -- Set locals
         local Juju = false
         -- Loop through all our buffs and look for the Juju Power icon.
-        for i = 1, 64, 1 do
+        for i = 1, 64 do
             local JujuBuff = UnitBuff("player",i);
             -- Is it Juju Power we found ?
             if ((JujuBuff ~= nil) and (string.find(JujuBuff,"Interface\\Icons\\INV_Misc_MonsterScales_11"))) then
                 Juju = true
+            end
+            -- See if we are in stealth.
+            if ((JujuBuff ~= nil) and (string.find(JujuBuff,"Interface\\Icons\\Ability_Ambush"))) then
+                StealthActive = true
             end
         end
         -- Do we need to use Juju Power ?
@@ -1704,9 +1722,24 @@ function DruidCat()
         end
     end
 
-    local icon, name, StealthActive, castable = GetShapeshiftFormInfo(2);
+    for i = 1, 6 do
+        local icon, name, active = GetShapeshiftFormInfo(i);
+        if (name == "Cat Form") then
+            
+        end
+    end
+
+    -- Loop through all buff to see if we are in stealth.
+    for i = 1, 64 do
+        local StealthBuff = UnitBuff("player",i);
+        -- Is it Prowl we found ?
+        if (StealthBuff) and (string.find(StealthBuff, "Interface\\Icons\\Ability_Ambush")) then
+            StealthActive = true
+        end
+    end
+
     -- 
-    if (StealthActive == 1) then
+    if (StealthActive == true) then
         -- 
         if (CheckIfSpellIsKnown("Cheap Shot", 0) == true) then
             CastSpellByName("Cheap Shot");
@@ -1715,42 +1748,43 @@ function DruidCat()
         end
     end
 
-    local SnD = false
-    local db
-    -- Loop through all our buffs and look for the Slice and Dice icon.
-    for i = 1, 64, 1 do
-        db = UnitBuff("player",i) 
-        -- Is it Slice and Dice we found ?
-        if ((db ~= nil) and (string.find(db,"Interface\\Icons\\Ability_Rogue_SliceDice"))) then
-            SnD = true
-        end
-    end
     -- Do our target have 5 combo points ?
     if (GetComboPoints("target") == 5) then
-        CastSpellByName("Rip");
+        if (CheckIfSpellIsKnown("Ferocious Bite", 0) == true) then
+            CastSpellByName("Ferocious Bite");
+        else
+            CastSpellByName("Rip");
+        end
     -- Do we have 3 or more combo points and do target have 20% or less health left ? 
     elseif ((GetComboPoints("target") >= 3) and (UnitHealth("target") / UnitHealthMax("target") < 0.2)) then
-        CastSpellByName("Rip");
+        if (CheckIfSpellIsKnown("Ferocious Bite", 0) == true) then
+            CastSpellByName("Ferocious Bite");
+        else
+            CastSpellByName("Claw");
+        end
     -- Is there 0 combo point on target ?
     elseif (GetComboPoints("target") == 0) then
         CastSpellByName("Claw");
     else
-        -- Have we learned 
-        if (CheckIfSpellIsKnown("Slice and Dice", 0) == true) then
-            CastSpellByName("Slice and Dice");
-        else
-            CastSpellByName("Claw");
-        end
+        CastSpellByName("Claw");
     end
 
     -- Start auto attack if we are not stealth.
-    if (StealthActive ~= 1) then
-        -- Make sure we start auto attack, even if we don't have enough energy, but only if we are not stealth.
-        if (not PlayerFrame.inCombat) then 
-            AttackTarget()
-        end
+    if (StealthActive == false) then
+        AutoAttackStart()
     end
 
+end
+
+-- ====================================================================================================
+-- =                                 Shoot what ever you have equiped                                 =
+-- ====================================================================================================
+
+function Shoot()
+    local _, _, i = strfind(GetInventoryItemLink("player",18), "\124Hitem:(%d+)")
+    local _, _, _, _, _, p = GetItemInfo(i)
+    local t = {} t.Bows = "Bow" t.Guns = "Gun" t.Crossbows = "Crossbow" t.Thrown = "Throw"
+    CastSpellByName((string.gsub(t[p], "[^T]","Shoot %1")))
 end
 
 -- ====================================================================================================
@@ -1774,11 +1808,8 @@ function WarlockRotation()
         return;
     end
 
-    -- Er vi i combat ?
-    if (not PlayerFrame.inCombat) then
-        -- Start attact
-        AttackTarget()
-    end
+    -- Start auto attack.
+    AutoAttackStart()
 
     -- Locals
     local DemonArmor = false
