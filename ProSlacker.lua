@@ -1208,6 +1208,41 @@ function PaladinAttack()
 -- /run -- CastSpellByName("Attack")
 -- /script PaladinAttack()
 
+
+--[[
+if (not PlayerFrame.inCombat) and UnitExists("target") then
+    CastSpellByName("Attack")
+end
+
+if not buffed("Holy Might", "player") then
+    CastSpellByName("Holy Strike")
+end
+
+CastSpellByName("Crusader Strike")
+
+if buffed("Seal of the Crusader", "player") then
+    CastSpellByName("Judgement")
+end
+if buffed("Seal of Command", "player") then
+    CastSpellByName("Judgement")
+end
+if buffed("Seal of Wisdom", "player") then
+    CastSpellByName("Judgement")
+end
+
+if not buffed("Seal of Wisdom", "player") and not buffed("Judgement of Wisdom","target") then
+    CastSpellByName("Seal of Wisdom")
+end
+
+if not buffed("Seal of Command", "player") and buffed("Judgement of Wisdom","target") then
+    CastSpellByName("Seal of Command")
+    return
+end
+--]]
+
+
+
+
     -- Do we cast fishing and don't fight ?
     if (FishingPoleEquipped() == true) then
         CastSpellByName("Fishing");
