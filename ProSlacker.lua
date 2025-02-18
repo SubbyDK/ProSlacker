@@ -2052,6 +2052,8 @@ function GuildRecruitment()
         ["Ruins of Ahn'Qiraj"] = "Nope",
         ["Molten Core"] = "Nope",
         ["Onyxia's Lair"] = "Nope",
+        ["Wailing Caverns"] = "Nope",
+        ["Zul'Gurub"] = "Nope",
 
         -- Battlegrounds where we don't want to recruit.
         ["Warsong Gulch"] = "Nope",
@@ -2067,6 +2069,7 @@ function GuildRecruitment()
         ["Scarlet Enclave"] = true,
         ["Caverns of Time"] = true,
         ["Thalassian Highlands"] = true,
+        ["Lapidis Isle"] = true,
 
         --  New citys in Turtle WoW.
         ["Alah'Thalas"] = true,
