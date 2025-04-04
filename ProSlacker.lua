@@ -727,7 +727,7 @@ function HunterPet()
         if UnitHealth("pet") == 0 then
             CastSpellByName("Revive Pet")
         elseif (GetPetHappiness() ~= nil) and (GetPetHappiness() ~= 3) and (not UnitAffectingCombat("pet")) then
-            CastSpellByName("Feed Pet") PickupContainerItem(0, 1)
+            CastSpellByName("Feed Pet") PickupContainerItem(0, 2)
         elseif UnitAffectingCombat("pet") then
             CastSpellByName("Mend Pet")
         else
@@ -861,33 +861,33 @@ function RogueAttack()
         return
     end
 
+    -- Check for Windfury.
+    WindfuryFromShaman()
+
     -- Do we have poison on our weapons ?
     hasMainHandEnchant, mainHandExpiration, mainHandCharges, hasOffHandEnchant, offHandExpiration, offHandCharges = GetWeaponEnchantInfo();
 
-    -- If we don't have a Shaman buffing with Windfury ?
-    if (WindfuryFromShaman() == false) then
-        -- Check main-hand enchant status
-        if hasMainHandEnchant then
-            -- Is it running out on time ?
-            if mainHandExpiration / 1000 <= intPoisonTimeLeft then
-                if GetTime() - lastMessageTime_mainHandExpiration >= intPoisonRemainder then
-                    lastMessageTime_mainHandExpiration = GetTime()
-                    DEFAULT_CHAT_FRAME:AddMessage("|cff" .. strPoisonLowColor .. "Main-hand poison is expiring. - Reapply soon." .. "|r")
-                end
+    -- Check main-hand enchant status
+    if hasMainHandEnchant then
+        -- Is it running out on time ?
+        if mainHandExpiration / 1000 <= intPoisonTimeLeft then
+            if GetTime() - lastMessageTime_mainHandExpiration >= intPoisonRemainder then
+                lastMessageTime_mainHandExpiration = GetTime()
+                DEFAULT_CHAT_FRAME:AddMessage("|cff" .. strPoisonLowColor .. "Main-hand poison is expiring. - Reapply soon." .. "|r")
             end
-            -- Is it running out due to amount of charges ?
-            if mainHandCharges < intPoisonCharges then
-                if GetTime() - lastMessageTime_mainHandCharges >= intPoisonRemainder then
-                    lastMessageTime_mainHandCharges = GetTime()
-                    DEFAULT_CHAT_FRAME:AddMessage("|cff" .. strPoisonLowColor .. "Main-hand poison is low on charges. - Reapply soon." .. "|r")
-                end
+        end
+        -- Is it running out due to amount of charges ?
+        if mainHandCharges < intPoisonCharges then
+            if GetTime() - lastMessageTime_mainHandCharges >= intPoisonRemainder then
+                lastMessageTime_mainHandCharges = GetTime()
+                DEFAULT_CHAT_FRAME:AddMessage("|cff" .. strPoisonLowColor .. "Main-hand poison is low on charges. - Reapply soon." .. "|r")
             end
-        -- We are missing poison on Main-hand.
-        else
-            if GetTime() - lastMessageTime_hasMainHandEnchant >= intPoisonRemainder then
-                lastMessageTime_hasMainHandEnchant = GetTime()
-                DEFAULT_CHAT_FRAME:AddMessage("|cff" .. strPoisonMissingColor .. ">> MISSING POISON - MAIN-HAND <<" .. "|r")
-            end
+        end
+    -- We are missing poison on Main-hand.
+    else
+        if GetTime() - lastMessageTime_hasMainHandEnchant >= intPoisonRemainder then
+            lastMessageTime_hasMainHandEnchant = GetTime()
+            DEFAULT_CHAT_FRAME:AddMessage("|cff" .. strPoisonMissingColor .. ">> MISSING POISON - MAIN-HAND <<" .. "|r")
         end
     end
 
@@ -990,12 +990,8 @@ function WindfuryFromShaman()
                         else
                             PrintTime = hour .. "hour " .. minutes .. "min " .. seconds .. "sec"
                         end
-                        -- Print a message that we are missing Windfury if we don't have poison on main-hand.
-                        -- Do we have poison on our weapons ?
-                        hasMainHandEnchant = GetWeaponEnchantInfo();
-                        if (not hasMainHandEnchant) then
-                            DEFAULT_CHAT_FRAME:AddMessage("|cff" .. strPoisonMissingColor .. "Windfury missing for " .. PrintTime .. ". Consider using poison." .. "|r")
-                        end
+                        -- Print a message that we are missing Windfury.
+                        DEFAULT_CHAT_FRAME:AddMessage("|cff" .. strPoisonMissingColor .. "Windfury missing for " .. PrintTime .. "." .. "|r")
                         -- 
                         lastMessageTime_WindfuryTotem = GetTime()
                     end
