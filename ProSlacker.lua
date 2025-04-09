@@ -796,6 +796,32 @@ function RogueAttack()
     if (StealthActive == 1) then
         -- Get the mob info.
         local MobInfo = GetMobInfo()
+
+        if (CheckInteractDistance("target", 3)) and (GetUnitName("target") ~= nil) then
+            -- Check that mob has pockets to pick.
+            if (MobHasNoPocketDB[MobInfo]) then
+                if (CheckIfSpellIsKnown("Cheap Shot", 0) == true) then
+                    CastSpellByName("Cheap Shot");
+                else
+                    CastSpellByName("Sinister Strike");
+                end
+            -- Mob has pockets.
+            else
+                CastSpellByName("Pick Pocket");
+                if (CheckIfSpellIsKnown("Cheap Shot", 0) == true) then
+                    CastSpellByName("Cheap Shot");
+                else
+                    CastSpellByName("Sinister Strike");
+                end
+            end
+        end
+        -- Stop so we don't do anything else then the stealth things.
+        return;
+    end
+
+
+--[[ Turtle WoW have removed the global cooldown on Pick Pocket, so we change to a easy on but save this for other privat servers.
+
         -- 1 = Compare Achievements, 28 yards - 2 = Trade, 8 yards - 3 = Duel, 7 yards - 4 = Follow, 28 yards - 5 = Pet-battle Duel, 7 yards
         if (CheckInteractDistance("target", 3)) and (strPickPocketDone ~= true) and (GetUnitName("target") ~= nil) and (not MobHasNoPocketDB[MobInfo]) then
             CastSpellByName("Pick Pocket");
@@ -808,10 +834,13 @@ function RogueAttack()
             end
             strPickPocketDone = false
         end
+        return;
     else
         -- Set it to false so we are sure we pick pocket next time.
         strPickPocketDone = false
     end
+--]]
+
 
     local SnD = false
     local db
@@ -1898,6 +1927,65 @@ function SoulShardDelete(int)
             end
         end
     end
+
+end
+
+-- ====================================================================================================
+-- =                                          Mage rotation.                                          =
+-- ====================================================================================================
+
+function MageRotation(spec)
+
+-- ########## The macro ##########
+-- /run -- CastSpellByName("Frostbolt")
+-- /script MageRotation("Frost")
+-- or
+-- /run -- CastSpellByName("Fire")
+-- /script MageRotation("Fireball")
+-- or
+-- /run -- CastSpellByName("Arcane Missiles")
+-- /script MageRotation("Frost")
+
+    -- Do we cast fishing and don't fight ?
+    if (FishingPoleEquipped() == true) then
+        CastSpellByName("Fishing");
+        return;
+    end
+
+    -- Find a new enermy we can attack.
+    if (TargetNewEnemy() == false) then
+        return;
+    end
+
+    -- Start auto attack.
+    AutoAttackStart()
+
+    -- Locals
+    local Armor = false
+    local Intellect = false
+    -- Loop through own buff.
+    for i = 1, 64 do
+        -- DEFAULT_CHAT_FRAME:AddMessage(UnitBuff("player", i));
+        -- Did we find a buff and it it the one we are looking for ?
+        if (UnitBuff("player",i)) and (string.find(UnitBuff("player", i), "Interface\\Icons\\Spell_Frost_FrostArmor02")) then
+            -- Set to true.
+            Armor = true
+        elseif ((UnitBuff("player",i)) and (string.find(UnitBuff("player", i), "Interface\\Icons\\Spell_Holy_MagicalSentry"))) then
+            -- Set to true.
+            Intellect = true
+        end
+    end
+
+    -- Buff if we don't have it already.
+    if (Armor ~= true) then
+        CastSpellByName("Frost Armor")
+    end
+    -- Buff intellect if we don't have it already.
+    if (Intellect ~= true) then
+        CastSpellByName("Arcane Intellect")
+    end
+
+    CastSpellByName("Frostbolt");
 
 end
 
