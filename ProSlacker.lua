@@ -798,6 +798,10 @@ function RogueAttack()
         local MobInfo = GetMobInfo()
 
         if (CheckInteractDistance("target", 3)) and (GetUnitName("target") ~= nil) then
+            -- Check that the table is made, if not, then create it.
+            if (not MobHasNoPocketDB) or (not type(MobHasNoPocketDB) == "table") then
+                MobHasNoPocketDB = {}
+            end
             -- Check that mob has pockets to pick.
             if (MobHasNoPocketDB[MobInfo]) then
                 if (CheckIfSpellIsKnown("Cheap Shot", 0) == true) then
@@ -856,7 +860,8 @@ function RogueAttack()
     if (GetComboPoints("target") == 5) then
         CastSpellByName("Eviscerate");
     -- Do we have 3 or more combo points and do target have 20% or less health left ? 
-    elseif ((GetComboPoints("target") >= 3) and (UnitHealth("target") / UnitHealthMax("target") < 0.2)) then
+    -- elseif ((GetComboPoints("target") >= 3) and (UnitHealth("target") / UnitHealthMax("target") < 0.2)) then
+    elseif ((GetComboPoints("target") >= 3) and (UnitHealth("target") < 3000)) then
         CastSpellByName("Eviscerate");
     -- Do we have Slice and Dice buff ?
     elseif (SnD == true) then
