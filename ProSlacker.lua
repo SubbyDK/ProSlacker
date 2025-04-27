@@ -341,11 +341,11 @@ local BlackListErrors = {
 -- ====================================================================================================
 
 local f = CreateFrame("Frame")
-f:RegisterEvent("UI_ERROR_MESSAGE");
-f:RegisterEvent("MERCHANT_SHOW");
-f:RegisterEvent("MERCHANT_CLOSED");
-f:RegisterEvent("ZONE_CHANGED_NEW_AREA");
-f:RegisterEvent("CHAT_MSG_SYSTEM");
+    f:RegisterEvent("UI_ERROR_MESSAGE");
+    f:RegisterEvent("MERCHANT_SHOW");
+    f:RegisterEvent("MERCHANT_CLOSED");
+    f:RegisterEvent("ZONE_CHANGED_NEW_AREA");
+    f:RegisterEvent("CHAT_MSG_SYSTEM");
 
 -- ====================================================================================================
 -- =                                          Event handler.                                          =
@@ -859,10 +859,11 @@ function RogueAttack()
     -- Do our target have 5 combo points ?
     if (GetComboPoints("target") == 5) then
         CastSpellByName("Eviscerate");
-    -- Do we have 3 or more combo points and do target have 20% or less health left ? 
-    -- elseif ((GetComboPoints("target") >= 3) and (UnitHealth("target") / UnitHealthMax("target") < 0.2)) then
-    elseif ((GetComboPoints("target") >= 3) and (UnitHealth("target") < 3000)) then
+    -- Eviscerate if 3 combo points and target HP is below 3000 and we are max level.
+    elseif ((GetComboPoints("target") >= 3) and (UnitHealth("target") < 3000) and (UnitLevel("player") == 60)) then
         CastSpellByName("Eviscerate");
+    -- Do we have 3 or more combo points and do target have 20% or less health left ? 
+    elseif ((GetComboPoints("target") >= 3) and (UnitHealth("target") / UnitHealthMax("target") < 0.2) and (UnitLevel("player") < 60)) then
     -- Do we have Slice and Dice buff ?
     elseif (SnD == true) then
         CastSpellByName("Surprise Attack");
