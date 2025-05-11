@@ -864,6 +864,7 @@ function RogueAttack()
         CastSpellByName("Eviscerate");
     -- Do we have 3 or more combo points and do target have 20% or less health left ? 
     elseif ((GetComboPoints("target") >= 3) and (UnitHealth("target") / UnitHealthMax("target") < 0.2) and (UnitLevel("player") < 60)) then
+        CastSpellByName("Eviscerate");
     -- Do we have Slice and Dice buff ?
     elseif (SnD == true) then
         CastSpellByName("Surprise Attack");
