@@ -537,7 +537,7 @@ end
 
 function BuyItemFromVendor()
     -- Do we have a shopping table ?
-    if (not ShoppingDB) then
+    if (not ShoppingDB) or (not type(ShoppingDB) == "table") then
         ShoppingDB = {}
     end
 
