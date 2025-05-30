@@ -765,6 +765,9 @@ function ReiskarAttack(ChosenAttack)
         CastSpellByName("Slice and Dice");
     end
 
+    -- Check for Windfury.
+    WindfuryFromShaman()
+
 end
 
 -- ====================================================================================================
