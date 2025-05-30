@@ -743,7 +743,17 @@ end
 -- =                                          Reiskar Rotation                                          =
 -- ====================================================================================================
 
-function ReiskarAttack(ChosenAttack)
+function ReiskarAttack(ChosenAttack, Opener)
+
+-- ########## The macro ##########
+-- /run -- CastSpellByName("Backstab")
+-- /script ReiskarAttack("Backstab", "Cheap Shot")
+
+    local icon, name, StealthActive, castable = GetShapeshiftFormInfo(1);
+    if (StealthActive == 1) then
+        CastSpellByName("Pick Pocket");
+        CastSpellByName(Opener);
+    end
 
     local SnD = false
     local db
