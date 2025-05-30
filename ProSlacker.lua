@@ -743,7 +743,7 @@ end
 -- =                                          Reiskar Rotation                                          =
 -- ====================================================================================================
 
-function ReiskarAttack(ChosenAttack, Opener)
+function ReiskarAttack(ChosenAttack, ChosenOpener)
 
 -- ########## The macro ##########
 -- /run -- CastSpellByName("Backstab")
@@ -752,31 +752,34 @@ function ReiskarAttack(ChosenAttack, Opener)
     local icon, name, StealthActive, castable = GetShapeshiftFormInfo(1);
     if (StealthActive == 1) then
         CastSpellByName("Pick Pocket");
-        CastSpellByName(Opener);
-    end
-
-    local SnD = false
-    local db
-    -- Loop through all our buffs and look for the Slice and Dice icon.
-    for i = 1, 64, 1 do
-        db = UnitBuff("player",i) 
-        -- Is it Slice and Dice we found ?
-        if ((db ~= nil) and (string.find(db,"Interface\\Icons\\Ability_Rogue_SliceDice"))) then
-            SnD = true
-        end
-    end
-    -- Do we have Slice and Dice buff ?
-    if (SnD == true) then
-        CastSpellByName(ChosenAttack);
-    -- 
-    elseif (GetComboPoints("target") == 0) and (SnD == false) then
-        CastSpellByName(ChosenAttack);
+        CastSpellByName(ChosenOpener);
+    -- We are not stealth
     else
-        CastSpellByName("Slice and Dice");
-    end
 
-    -- Check for Windfury.
-    WindfuryFromShaman()
+        local SnD = false
+        local db
+        -- Loop through all our buffs and look for the Slice and Dice icon.
+        for i = 1, 64, 1 do
+            db = UnitBuff("player",i) 
+            -- Is it Slice and Dice we found ?
+            if ((db ~= nil) and (string.find(db,"Interface\\Icons\\Ability_Rogue_SliceDice"))) then
+                SnD = true
+            end
+        end
+        -- Do we have Slice and Dice buff ?
+        if (SnD == true) then
+            CastSpellByName(ChosenAttack);
+        -- 
+        elseif (GetComboPoints("target") == 0) and (SnD == false) then
+            CastSpellByName(ChosenAttack);
+        else
+            CastSpellByName("Slice and Dice");
+        end
+
+        -- Check for Windfury.
+        WindfuryFromShaman()
+
+    end
 
 end
 
