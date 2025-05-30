@@ -740,6 +740,34 @@ function HunterPet()
 end
 
 -- ====================================================================================================
+-- =                                          Reiskar Rotation                                          =
+-- ====================================================================================================
+
+function ReiskarAttack(ChosenAttack)
+
+    local SnD = false
+    local db
+    -- Loop through all our buffs and look for the Slice and Dice icon.
+    for i = 1, 64, 1 do
+        db = UnitBuff("player",i) 
+        -- Is it Slice and Dice we found ?
+        if ((db ~= nil) and (string.find(db,"Interface\\Icons\\Ability_Rogue_SliceDice"))) then
+            SnD = true
+        end
+    end
+    -- Do we have Slice and Dice buff ?
+    if (SnD == true) then
+        CastSpellByName(ChosenAttack);
+    -- 
+    elseif (GetComboPoints("target") == 0) and (SnD == false) then
+        CastSpellByName(ChosenAttack);
+    else
+        CastSpellByName("Slice and Dice");
+    end
+
+end
+
+-- ====================================================================================================
 -- =                                          Rogue Rotation                                          =
 -- ====================================================================================================
 
