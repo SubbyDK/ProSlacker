@@ -749,6 +749,11 @@ function ReiskarAttack(ChosenAttack, ChosenOpener)
 -- /run -- CastSpellByName("Backstab")
 -- /script ReiskarAttack("Backstab", "Cheap Shot")
 
+    -- Find a new enermy we can attack.
+    if (TargetNewEnemy() == false) then
+        return;
+    end
+
     local icon, name, StealthActive, castable = GetShapeshiftFormInfo(1);
     if (StealthActive == 1) then
         CastSpellByName("Pick Pocket");
