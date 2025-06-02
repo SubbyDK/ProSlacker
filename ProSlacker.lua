@@ -781,6 +781,9 @@ function ReiskarAttack(ChosenAttack, ChosenOpener)
             CastSpellByName("Slice and Dice");
         end
 
+        -- Check for poison.
+        CheckForPoison()
+
         -- Check for Windfury.
         WindfuryFromShaman()
 
@@ -792,11 +795,11 @@ end
 -- =                                          Rogue Rotation                                          =
 -- ====================================================================================================
 
-function RogueAttack()
+function RogueAttack(ChosenAttack, ChosenOpener)
 
 -- ########## The macro ##########
 -- /run -- CastSpellByName("Sinister Strike")
--- /script RogueAttack()
+-- /script RogueAttack("Sinister Strike", "Cheap Shot")
 
     -- Do we cast fishing and don't fight ?
     if (FishingPoleEquipped() == true) then
@@ -853,18 +856,18 @@ function RogueAttack()
             end
             -- Check that mob has pockets to pick.
             if (MobHasNoPocketDB[MobInfo]) then
-                if (CheckIfSpellIsKnown("Cheap Shot", 0) == true) then
-                    CastSpellByName("Cheap Shot");
+                if (CheckIfSpellIsKnown(ChosenOpener, 0) == true) then
+                    CastSpellByName(ChosenOpener);
                 else
-                    CastSpellByName("Sinister Strike");
+                    CastSpellByName(ChosenAttack);
                 end
             -- Mob has pockets.
             else
                 CastSpellByName("Pick Pocket");
-                if (CheckIfSpellIsKnown("Cheap Shot", 0) == true) then
-                    CastSpellByName("Cheap Shot");
+                if (CheckIfSpellIsKnown(ChosenOpener, 0) == true) then
+                    CastSpellByName(ChosenOpener);
                 else
-                    CastSpellByName("Sinister Strike");
+                    CastSpellByName(ChosenAttack);
                 end
             end
         end
@@ -880,10 +883,10 @@ function RogueAttack()
             CastSpellByName("Pick Pocket");
             strPickPocketDone = true
         else
-            if (CheckIfSpellIsKnown("Cheap Shot", 0) == true) then
-                CastSpellByName("Cheap Shot");
+            if (CheckIfSpellIsKnown(ChosenOpener, 0) == true) then
+                CastSpellByName(ChosenOpener);
             else
-                CastSpellByName("Sinister Strike");
+                CastSpellByName(ChosenAttack);
             end
             strPickPocketDone = false
         end
@@ -918,17 +921,17 @@ function RogueAttack()
     elseif (SnD == true) then
         CastSpellByName("Surprise Attack");
         CastSpellByName("Riposte");
-        CastSpellByName("Sinister Strike");
+        CastSpellByName(ChosenAttack);
     -- Is there 0 combo point on target ?
     elseif (GetComboPoints("target") == 0) then
         CastSpellByName("Riposte");
-        CastSpellByName("Sinister Strike");
+        CastSpellByName(ChosenAttack);
     else
         -- Have we learned Slice and Dice yet ?
         if (CheckIfSpellIsKnown("Slice and Dice", 0) == true) then
             CastSpellByName("Slice and Dice");
         else
-            CastSpellByName("Sinister Strike");
+            CastSpellByName(ChosenAttack);
         end
     end
 
@@ -938,6 +941,22 @@ function RogueAttack()
         AutoAttackStart()
     end
 
+    -- Check for poison.
+    CheckForPoison()
+
+    -- Check for Windfury.
+    WindfuryFromShaman()
+
+end
+
+
+-- ====================================================================================================
+-- =                                           Poison check                                           =
+-- ====================================================================================================
+
+
+function CheckForPoison()
+
     -- Do we even know poison yet ? No reason to spam that we need it, if we can't make it yet.
     if (CheckIfSpellIsKnown("Poisons", 0) ~= true) then
         if (Debug == true) then
@@ -945,9 +964,6 @@ function RogueAttack()
         end
         return
     end
-
-    -- Check for Windfury.
-    WindfuryFromShaman()
 
     -- Do we have poison on our weapons ?
     hasMainHandEnchant, mainHandExpiration, mainHandCharges, hasOffHandEnchant, offHandExpiration, offHandCharges = GetWeaponEnchantInfo();
@@ -959,6 +975,7 @@ function RogueAttack()
             if GetTime() - lastMessageTime_mainHandExpiration >= intPoisonRemainder then
                 lastMessageTime_mainHandExpiration = GetTime()
                 DEFAULT_CHAT_FRAME:AddMessage("|cff" .. strPoisonLowColor .. "Main-hand poison is expiring. - Reapply soon." .. "|r")
+                PlaySoundFile("Interface\\AddOns\\ProSlacker\\Sounds\\Poison_Is_Running_Out.mp3");
             end
         end
         -- Is it running out due to amount of charges ?
@@ -966,6 +983,7 @@ function RogueAttack()
             if GetTime() - lastMessageTime_mainHandCharges >= intPoisonRemainder then
                 lastMessageTime_mainHandCharges = GetTime()
                 DEFAULT_CHAT_FRAME:AddMessage("|cff" .. strPoisonLowColor .. "Main-hand poison is low on charges. - Reapply soon." .. "|r")
+                PlaySoundFile("Interface\\AddOns\\ProSlacker\\Sounds\\Poison_Is_Running_Low.mp3");
             end
         end
     -- We are missing poison on Main-hand.
@@ -973,6 +991,7 @@ function RogueAttack()
         if GetTime() - lastMessageTime_hasMainHandEnchant >= intPoisonRemainder then
             lastMessageTime_hasMainHandEnchant = GetTime()
             DEFAULT_CHAT_FRAME:AddMessage("|cff" .. strPoisonMissingColor .. ">> MISSING POISON - MAIN-HAND <<" .. "|r")
+            PlaySoundFile("Interface\\AddOns\\ProSlacker\\Sounds\\Missing_Poison.mp3");
         end
     end
 
@@ -983,6 +1002,7 @@ function RogueAttack()
             if GetTime() - lastMessageTime_offHandExpiration >= intPoisonRemainder then
                 lastMessageTime_offHandExpiration = GetTime()
                 DEFAULT_CHAT_FRAME:AddMessage("|cff" .. strPoisonLowColor .. "Off-hand poison is expiring. - Reapply soon." .. "|r")
+                PlaySoundFile("Interface\\AddOns\\ProSlacker\\Sounds\\Poison_Is_Running_Out.mp3");
             end
         end
         -- Is it running out due to amount of charges ?
@@ -990,6 +1010,7 @@ function RogueAttack()
             if GetTime() - lastMessageTime_offHandCharges >= intPoisonRemainder then
                 lastMessageTime_offHandCharges = GetTime()
                 DEFAULT_CHAT_FRAME:AddMessage("|cff" .. strPoisonLowColor .. "Off-hand poison is low on charges. - Reapply soon." .. "|r")
+                PlaySoundFile("Interface\\AddOns\\ProSlacker\\Sounds\\Poison_Is_Running_Low.mp3");
             end
         end
     -- We are missing poison on Off-hand.
@@ -997,6 +1018,7 @@ function RogueAttack()
         if ((GetTime() - lastMessageTime_hasOffHandEnchant) >= intPoisonRemainder) then
             lastMessageTime_hasOffHandEnchant = GetTime()
             DEFAULT_CHAT_FRAME:AddMessage("|cff" .. strPoisonMissingColor .. ">> MISSING POISON - OFF-HAND <<" .. "|r")
+            PlaySoundFile("Interface\\AddOns\\ProSlacker\\Sounds\\Missing_Poison.mp3");
         end
     end
 
