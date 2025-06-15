@@ -1658,7 +1658,7 @@ function WarriorDPS(at1, at2, at3, at4, at5, at6, at7, at8, at9)
         local i, x = 1, 0
         -- Loop through all debuffs on target to look for Rend icon.
         while (UnitDebuff("target",i)) do
-            -- Is the icon the same as the one Rens is using ?
+            -- Is the icon the same as the one Rend is using ?
             if (UnitDebuff("target",i) == "Interface\\Icons\\Ability_Gouge") then
                 -- We found Rend.
                 x = 1
