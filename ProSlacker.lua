@@ -824,11 +824,11 @@ function RogueAttack(ChosenAttack, ChosenOpener)
         for i = 1, 64, 1 do
             local JujuBuff = UnitBuff("player",i);
             local GroundScorpokAssayBuff = UnitBuff("player",i);
-            -- Is it Juju Power we found ?
+            -- Is it "Juju Power" we found ?
             if ((JujuBuff ~= nil) and (string.find(JujuBuff,"Interface\\Icons\\INV_Misc_MonsterScales_11"))) then
                 Juju = true
             end
-            -- Is it 
+            -- Is it "Ground Scorpok Assay" we found ?
             if ((GroundScorpokAssayBuff ~= nil) and (string.find(GroundScorpokAssayBuff,"Interface\\Icons\\Spell_Nature_ForceOfNature"))) then
                 GroundScorpokAssay = true
             end
