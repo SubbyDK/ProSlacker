@@ -819,12 +819,18 @@ function RogueAttack(ChosenAttack, ChosenOpener)
     if (RogueJujuPower == true) and (partyMembers > 0) then
         -- Set locals
         local Juju = false
+        local GroundScorpokAssay = false
         -- Loop through all our buffs and look for the Juju Power icon.
         for i = 1, 64, 1 do
             local JujuBuff = UnitBuff("player",i);
+            local GroundScorpokAssayBuff = UnitBuff("player",i);
             -- Is it Juju Power we found ?
             if ((JujuBuff ~= nil) and (string.find(JujuBuff,"Interface\\Icons\\INV_Misc_MonsterScales_11"))) then
                 Juju = true
+            end
+            -- Is it 
+            if ((GroundScorpokAssayBuff ~= nil) and (string.find(GroundScorpokAssayBuff,"Interface\\Icons\\Spell_Nature_ForceOfNature"))) then
+                GroundScorpokAssay = true
             end
         end
         -- Do we need to use Juju Power ?
@@ -841,8 +847,24 @@ function RogueAttack(ChosenAttack, ChosenOpener)
                 end
             end
         end
+        -- 
+        if (GroundScorpokAssay == false) and (GetNumRaidMembers() > 20) then
+            -- Do we have any Ground Scorpok Assay in our bags ?
+            for bag = 0, 4 do
+                for slotNum = 1, GetContainerNumSlots(bag) do
+                -- for slotNum = GetContainerNumSlots(bag), 1, -1 do
+                    local itemLink = GetContainerItemLink(bag, slotNum)
+                    if itemLink and string.find(string.lower(itemLink), "ground scorpok assay") then
+                        -- We found one, so we use it.
+                        UseContainerItem(bag, slotNum)
+                    end
+                end
+            end
+        end
     end
---]]
+
+    -- Do we want to use Ground Scorpok Assay ? (25 Agility)
+
     -- 
     local icon, name, StealthActive, castable = GetShapeshiftFormInfo(1);
     if (StealthActive == 1) then
