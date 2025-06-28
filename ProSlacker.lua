@@ -72,7 +72,7 @@ local intWindfuryWaitTime = 180                 -- How many sec do we want to wa
 local strPoisonLowColor = "ff8633"              -- Color for the low count or time on poison.
 local strPoisonMissingColor = "ff3333"          -- Color for the missing poison.
 local strPoisonApplyingColor = "00FF00"         -- Color for applying poison to weapon.
-local RogueJujuPower = true                     -- Do we want to use Juju Power when in party / raid
+local UseConsumables = true                     -- Do we want to use Juju Power when in party / raid
 
 -- ============================================== Shaman ==============================================
 
@@ -813,17 +813,21 @@ function RogueAttack(ChosenAttack, ChosenOpener)
     end
 
     -- Set some locals
-    local partyMembers = GetNumPartyMembers()   -- Get group numbers
+    local partyMembers = GetNumPartyMembers() -- Get group numbers
 
     -- Do we use Juju Power ?
-    if (RogueJujuPower == true) and (partyMembers > 0) then
+    if (UseConsumables == true) and (partyMembers > 0) then
         -- Set locals
         local Juju = false
         local GroundScorpokAssay = false
+        local Mongoose = false
+        local Firewater = false
         -- Loop through all our buffs and look for the Juju Power icon.
         for i = 1, 64, 1 do
             local JujuBuff = UnitBuff("player",i);
             local GroundScorpokAssayBuff = UnitBuff("player",i);
+            local MongooseBuff = UnitBuff("player",i);
+            local FirewaterBuff = UnitBuff("player",i);
             -- Is it "Juju Power" we found ?
             if ((JujuBuff ~= nil) and (string.find(JujuBuff,"Interface\\Icons\\INV_Misc_MonsterScales_11"))) then
                 Juju = true
@@ -832,10 +836,18 @@ function RogueAttack(ChosenAttack, ChosenOpener)
             if ((GroundScorpokAssayBuff ~= nil) and (string.find(GroundScorpokAssayBuff,"Interface\\Icons\\Spell_Nature_ForceOfNature"))) then
                 GroundScorpokAssay = true
             end
+            -- Is it "Elixir of the Mongoose" we found ?
+            if ((MongooseBuff ~= nil) and (string.find(MongooseBuff,"Interface\\Icons\\INV_Potion_32"))) then
+                Mongoose = true
+            end
+            -- Is it "Winterfall Firewater" we found ?
+            if ((FirewaterBuff ~= nil) and (string.find(FirewaterBuff,"Interface\\Icons\\INV_Potion_92"))) then
+                Firewater = true
+            end
         end
-        -- Do we need to use Juju Power ?
+        -- Do we need to use "Juju Power" ? (30 Strength)
         if (Juju == false) then
-            -- Do we have any Juju Power in our bags ?
+            -- Do we have any "Juju Power" in our bags ?
             for bag = 0, 4 do
                 for slotNum = 1, GetContainerNumSlots(bag) do
                 -- for slotNum = GetContainerNumSlots(bag), 1, -1 do
@@ -847,9 +859,9 @@ function RogueAttack(ChosenAttack, ChosenOpener)
                 end
             end
         end
-        -- 
+        -- Do we need to use "Ground Scorpok Assay" ? (25 Agility)
         if (GroundScorpokAssay == false) and (GetNumRaidMembers() > 20) then
-            -- Do we have any Ground Scorpok Assay in our bags ?
+            -- Do we have any "Ground Scorpok Assay" in our bags ?
             for bag = 0, 4 do
                 for slotNum = 1, GetContainerNumSlots(bag) do
                 -- for slotNum = GetContainerNumSlots(bag), 1, -1 do
@@ -861,9 +873,35 @@ function RogueAttack(ChosenAttack, ChosenOpener)
                 end
             end
         end
+        -- Do we need to use "Elixir of the Mongoose" ? (25 Agility & 2% crit)
+        if (Mongoose == false) and (GetNumRaidMembers() > 20) then
+            -- Do we have any "Elixir of the Mongoose" in our bags ?
+            for bag = 0, 4 do
+                for slotNum = 1, GetContainerNumSlots(bag) do
+                -- for slotNum = GetContainerNumSlots(bag), 1, -1 do
+                    local itemLink = GetContainerItemLink(bag, slotNum)
+                    if itemLink and string.find(string.lower(itemLink), "elixir of the mongoose") then
+                        -- We found one, so we use it.
+                        UseContainerItem(bag, slotNum)
+                    end
+                end
+            end
+        end
+        -- Do we need to use "Winterfall Firewater" ? (35 Attack Power)
+        if (Firewater == false) and (GetNumRaidMembers() > 20) then
+            -- Do we have any "Winterfall Firewater" in our bags ?
+            for bag = 0, 4 do
+                for slotNum = 1, GetContainerNumSlots(bag) do
+                -- for slotNum = GetContainerNumSlots(bag), 1, -1 do
+                    local itemLink = GetContainerItemLink(bag, slotNum)
+                    if itemLink and string.find(string.lower(itemLink), "winterfall firewater") then
+                        -- We found one, so we use it.
+                        UseContainerItem(bag, slotNum)
+                    end
+                end
+            end
+        end
     end
-
-    -- Do we want to use Ground Scorpok Assay ? (25 Agility)
 
     -- 
     local icon, name, StealthActive, castable = GetShapeshiftFormInfo(1);
@@ -885,7 +923,9 @@ function RogueAttack(ChosenAttack, ChosenOpener)
                 end
             -- Mob has pockets.
             else
-                CastSpellByName("Pick Pocket");
+                if (CheckIfSpellIsKnown("Pick Pocket", 0) == true) then
+                    CastSpellByName("Pick Pocket");
+                end
                 if (CheckIfSpellIsKnown(ChosenOpener, 0) == true) then
                     CastSpellByName(ChosenOpener);
                 else
@@ -1851,7 +1891,7 @@ function DruidCat()
     local StealthActive = false
 
     -- Do we use Juju Power ?
-    if (RogueJujuPower == true) and (partyMembers > 0) then
+    if (UseConsumables == true) and (partyMembers > 0) then
         -- Set locals
         local Juju = false
         -- Loop through all our buffs and look for the Juju Power icon.
