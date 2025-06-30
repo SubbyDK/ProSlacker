@@ -816,7 +816,7 @@ function RogueAttack(ChosenAttack, ChosenOpener)
     local partyMembers = GetNumPartyMembers() -- Get group numbers
 
     -- Do we use Juju Power ?
-    if (UseConsumables == true) and (partyMembers > 0) then
+    if (UseConsumables == true) and ((partyMembers > 3) or (GetNumRaidMembers() > 5)) then
         -- Set locals
         local Juju = false
         local GroundScorpokAssay = false
