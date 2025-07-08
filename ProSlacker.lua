@@ -1598,6 +1598,61 @@ function PriestHeal()
 end
 
 -- ====================================================================================================
+-- =                                         Priest Smite DPS                                         =
+-- ====================================================================================================
+
+function PriestDPS()
+
+-- ########## The macro ##########
+-- /run -- CastSpellByName("Smite")
+-- /script PriestDPS()
+
+    -- Do we cast fishing and don't fight ?
+    if (FishingPoleEquipped() == true) then
+        CastSpellByName("Fishing");
+        return;
+    end
+
+    -- Find a new enermy we can attack.
+    if (TargetNewEnemy() == false) then
+        return;
+    end
+
+    -- Start auto attack.
+    AutoAttackStart()
+
+    -- Locals
+    local HasInnerFireBuff = false
+    local HasMightBuff = false
+    -- Loop through own buff.
+    for i = 1, 64 do
+        if UnitBuff("player",i) then
+            -- DEFAULT_CHAT_FRAME:AddMessage(UnitBuff("player",i)) -- Keep this line here for when we have to change check for buff.
+        end
+        --Do we have Seal of Righteousness up ?
+        if UnitBuff("player",i) and string.find(UnitBuff("player",i),"Interface\\Icons\\Spell_Holy_InnerFire") then
+            -- Vi fandt Battle Shout.
+            HasInnerFireBuff = true
+        end
+    end
+    -- We did not find Inner Fire.
+    if (not HasInnerFireBuff) then
+        -- Do we know Inner Fire ?
+        if (CheckIfSpellIsKnown("Inner Fire", 0) == true) then
+            -- Cast Inner Fire.
+            CastSpellByName("Inner Fire");
+        end
+    end
+
+    -- 
+    if (CheckIfSpellIsKnown("Smite", 0) == true) then
+        CastSpellByName("Smite");
+    end
+
+
+end
+
+-- ====================================================================================================
 -- =                             Get a name on what is what button number                             =
 -- ====================================================================================================
 
@@ -2270,33 +2325,37 @@ function GuildRecruitment()
         ["Ironforge"] = true,
         ["Darnassus"] = true,
 
-        -- Dungeons where we don't want to recruit.
+        -- Dungeons and raids where we don't want to recruit.
+        ["Ragefire Chasm"] = "Nope",
+        ["Wailing Caverns"] = "Nope",
+        -- The Deadmines
+        ["Shadowfang Keep"] = "Nope",
+        --The Stockade
+        ["Blackfathom Deeps"] = "Nope",
+        ["Gnomeregan"] = "Nope",
+        ["Razorfen Kraul"] = "Nope",
+        ["Scarlet Monastery Graveyard"] = "Nope",
+        ["Scarlet Monastery Library"] = "Nope",
+        -- Scarlet Monastery Armory
+        ["Scarlet Monastery Cathedral"] = "Nope",
+        ["Razorfen Downs"] = "Nope",
+        ["Uldaman"] = "Nope",
+        -- Zul'Farrak
+        ["Maraudon"] = "Nope",
+        ["The Temple of Atal'Hakkar"] = "Nope",
+        ["Blackrock Depths"] = "Nope",
         ["Blackrock Spire"] = "Nope",
         ["Scholomance"] = "Nope",
         ["Stratholme"] = "Nope",
         ["Dire Maul"] = "Nope",
-        ["Blackrock Depths"] = "Nope",
-        ["Gnomeregan"] = "Nope",
-        ["Maraudon"] = "Nope",
-        ["The Temple of Atal'Hakkar"] = "Nope",
-        ["Ragefire Chasm"] = "Nope",
-        ["Ruins of Ahn'Qiraj"] = "Nope",
+        -- Raids
+        ["Zul'Gurub"] = "Nope",
         ["Molten Core"] = "Nope",
         ["Onyxia's Lair"] = "Nope",
-        ["Wailing Caverns"] = "Nope",
-        ["Zul'Gurub"] = "Nope",
-        ["Scarlet Monastery Cathedral"] = "Nope",
-        ["Scarlet Monastery Library"] = "Nope",
-        ["Scarlet Monastery Graveyard"] = "Nope",
-        ["Naxxramas"] = "Nope",
-        ["Shadowfang Keep"] = "Nope",
-        ["Emerald Sanctum"] = "Nope",
-        ["Uldaman"] = "Nope",
-        ["Blackfathom Deeps"] = "Nope",
-        ["Razorfen Kraul"] = "Nope",
+        ["Ruins of Ahn'Qiraj"] = "Nope",
         ["Blackwing Lair"] = "Nope",
-        ["Ahn'Qiraj"] = "Nope",
-        ["Razorfen Downs"] = "Nope",
+        -- AQ40
+        ["Naxxramas"] = "Nope",
 
         -- Battlegrounds where we don't want to recruit.
         ["Warsong Gulch"] = "Nope",
@@ -2317,12 +2376,13 @@ function GuildRecruitment()
         --  New citys in Turtle WoW.
         ["Alah'Thalas"] = true,
 
-        -- New dungeons in Turtle WoW where we don't want to recruit.
+        -- New dungeons and raids in Turtle WoW where we don't want to recruit.
         ["Stormwind Vault"] = "Nope",
         ["Tower of Karazhan"] = "Nope",
         ["Crescent Grove"] = "Nope",
         ["The Black Morass"] = "Nope",
         ["Gilneas City"] = "Nope",
+        ["Emerald Sanctum"] = "Nope",
 
         -- New battlegrounds in Turtle WoW where we don't want to recruit.
         
