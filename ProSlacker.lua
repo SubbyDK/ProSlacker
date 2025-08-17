@@ -822,7 +822,7 @@ function RogueAttack(ChosenAttack, ChosenOpener)
         local GroundScorpokAssay = false
         local Mongoose = false
         local Firewater = false
-        -- Loop through all our buffs and look for the Juju Power icon.
+        -- Loop through all our buffs and look for the buff icon that we want running.
         for i = 1, 64, 1 do
             local JujuBuff = UnitBuff("player",i);
             local GroundScorpokAssayBuff = UnitBuff("player",i);
@@ -961,18 +961,37 @@ function RogueAttack(ChosenAttack, ChosenOpener)
 
 
     local SnD = false
+    local TfB = false
     local db
-    -- Loop through all our buffs and look for the Slice and Dice icon.
+    -- Loop through all our buffs and look for the "Slice and Dice" and "Taste for Blood" icon.
     for i = 1, 64, 1 do
+        -- Keep this so we easy can look for new buffs.
+        if UnitBuff("player",i) then
+            -- DEFAULT_CHAT_FRAME:AddMessage(UnitBuff("player",i)) -- Keep this line here for when we have to change check for buff.
+        end
         db = UnitBuff("player",i) 
-        -- Is it Slice and Dice we found ?
+        -- Is it "Slice and Dice" we found ?
         if ((db ~= nil) and (string.find(db,"Interface\\Icons\\Ability_Rogue_SliceDice"))) then
             SnD = true
+        end
+        -- Is it "Taste for Blood" we found ?
+        if ((db ~= nil) and (string.find(db,"Interface\\Icons\\INV_Misc_Bone_09"))) then
+            TfB = true
         end
     end
     -- Do our target have 5 combo points ?
     if (GetComboPoints("target") == 5) then
-        CastSpellByName("Eviscerate");
+        -- Do we have "Taste of Blood" running ?
+        if (TfB == true) then
+            CastSpellByName("Eviscerate");
+        else
+            -- Have we learned "Rupture" yet ?
+            if (CheckIfSpellIsKnown("Rupture", 0) == true) then
+                CastSpellByName("Rupture");
+            else
+                CastSpellByName("Eviscerate");
+            end
+        end
     -- Eviscerate if 3 combo points and target HP is below 3000 and we are max level.
     elseif ((GetComboPoints("target") >= 3) and (UnitHealth("target") < 3000) and (UnitLevel("player") == 60)) then
         CastSpellByName("Eviscerate");
@@ -989,7 +1008,7 @@ function RogueAttack(ChosenAttack, ChosenOpener)
         CastSpellByName("Riposte");
         CastSpellByName(ChosenAttack);
     else
-        -- Have we learned Slice and Dice yet ?
+        -- Have we learned "Slice and Dice" yet ?
         if (CheckIfSpellIsKnown("Slice and Dice", 0) == true) then
             CastSpellByName("Slice and Dice");
         else
