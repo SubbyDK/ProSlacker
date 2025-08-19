@@ -976,7 +976,13 @@ function RogueAttack(ChosenAttack, ChosenOpener)
         end
         -- Is it "Taste for Blood" we found ?
         if ((db ~= nil) and (string.find(db,"Interface\\Icons\\INV_Misc_Bone_09"))) then
-            TfB = true
+            -- Is there more then 8 sec left ?
+            --if (GetPlayerBuffTimeLeft(i) >= 8) then
+                DEFAULT_CHAT_FRAME:AddMessage(GetPlayerBuffTexture(i-1));
+                DEFAULT_CHAT_FRAME:AddMessage(UnitBuff("player",i))
+                DEFAULT_CHAT_FRAME:AddMessage("Taste of Blood: " .. GetPlayerBuffTimeLeft(i-1));
+                TfB = true
+            --end
         end
     end
     -- Do our target have 5 combo points ?

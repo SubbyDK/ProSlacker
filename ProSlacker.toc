@@ -1,7 +1,7 @@
 ## Title: ProSlacker
 ## Interface: 11200
 ## Author: Subby
-## Version: 0.4
+## Version: 0.5
 ## DefaultState: enabled
 ## Notes: Will help with a lot of stuff and a lot of checks.
 
