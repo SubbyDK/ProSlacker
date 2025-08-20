@@ -49,7 +49,7 @@ local PrintTime = nil                           --
 
 -- ============================================= General. =============================================
 
-local RunRecruit = true                         -- Du we want to run the recruitment ?
+local RunRecruit = false                        -- Du we want to run the recruitment ?
 local RecruitmentRunTimer = 1200                -- How often we want to run the recruitment. (in seconds)
 local Debug = false                             -- Run debug for the addon, can also be done ingame /ps debug
 
