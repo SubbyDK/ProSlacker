@@ -964,12 +964,12 @@ function RogueAttack(ChosenAttack, ChosenOpener)
     local TfB = false
     local db
     -- Loop through all our buffs and look for the "Slice and Dice" and "Taste for Blood" icon.
-    for i = 1, 64, 1 do
+    for i = 0, 64, 1 do
         -- Keep this so we easy can look for new buffs.
         if UnitBuff("player",i) then
-            -- DEFAULT_CHAT_FRAME:AddMessage(UnitBuff("player",i)) -- Keep this line here for when we have to change check for buff.
+            -- DEFAULT_CHAT_FRAME:AddMessage(GetPlayerBuffTexture(i)) -- Keep this line here for when we have to change check for buff.
         end
-        db = UnitBuff("player",i) 
+        db = GetPlayerBuffTexture(i)
         -- Is it "Slice and Dice" we found ?
         if ((db ~= nil) and (string.find(db,"Interface\\Icons\\Ability_Rogue_SliceDice"))) then
             SnD = true
@@ -977,12 +977,9 @@ function RogueAttack(ChosenAttack, ChosenOpener)
         -- Is it "Taste for Blood" we found ?
         if ((db ~= nil) and (string.find(db,"Interface\\Icons\\INV_Misc_Bone_09"))) then
             -- Is there more then 8 sec left ?
-            --if (GetPlayerBuffTimeLeft(i) >= 8) then
-                DEFAULT_CHAT_FRAME:AddMessage(GetPlayerBuffTexture(i-1));
-                DEFAULT_CHAT_FRAME:AddMessage(UnitBuff("player",i))
-                DEFAULT_CHAT_FRAME:AddMessage("Taste of Blood: " .. GetPlayerBuffTimeLeft(i-1));
+            if (GetPlayerBuffTimeLeft(i) >= 8) then
                 TfB = true
-            --end
+            end
         end
     end
     -- Do our target have 5 combo points ?
@@ -1348,19 +1345,19 @@ function RoguePoison()
 
     -- Apply poison based on key combinations
     if isCtrlDown or isShiftDown and not isAltDown then
-        ApplyPoison(isCtrlDown and 16 or 17, "Deadly Poison")
+        ApplyPoison(isCtrlDown and 16 or 17, "Dissolvent Poison II")--"Deadly Poison")
     elseif isAltDown and (isCtrlDown or isShiftDown) then
-        ApplyPoison(isCtrlDown and 16 or 17, "Instant Poison")
+        ApplyPoison(isCtrlDown and 16 or 17, "Dissolvent Poison II")--"Instant Poison")
     else
-        -- Apply Instant Poison if needed
+        -- Apply poison if needed
         if hasOffHandEnchant and (offHandExpiration / 1000 <= intPoisonTimeLeft or offHandCharges < intPoisonCharges) then
-            ApplyPoison(17, "Instant Poison")
+            ApplyPoison(17, "Dissolvent Poison II")--"Instant Poison")
         elseif not hasOffHandEnchant then
-            ApplyPoison(17, "Instant Poison")
+            ApplyPoison(17, "Dissolvent Poison II")--"Instant Poison")
         elseif hasMainHandEnchant and (mainHandExpiration / 1000 <= intPoisonTimeLeft or mainHandCharges < intPoisonCharges) then
-            ApplyPoison(16, "Instant Poison")
+            ApplyPoison(16, "Dissolvent Poison II")--"Instant Poison")
         elseif not hasMainHandEnchant then
-            ApplyPoison(16, "Instant Poison")
+            ApplyPoison(16, "Dissolvent Poison II")--"Instant Poison")
         end
     end
 end
