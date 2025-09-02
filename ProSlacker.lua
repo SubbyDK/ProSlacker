@@ -1443,33 +1443,53 @@ end
     AutoAttackStart()
 
     -- Locals
-    local HasSealBuff = false
+    local HasRighteousnessSeal = false
+    local HasWisdomSeal = false
     local HasMightBuff = false
+    local HasWisdomBuff = false
     -- Loop through own buff.
     for i = 1, 64 do
         if UnitBuff("player",i) then
             -- DEFAULT_CHAT_FRAME:AddMessage(UnitBuff("player",i)) -- Keep this line here for when we have to change check for buff.
         end
         --Do we have Seal of Righteousness up ?
-        if UnitBuff("player",i) and string.find(UnitBuff("player",i),"Interface\\Icons\\Ability_ThunderBolt") then
-            -- Vi fandt Battle Shout.
-            HasSealBuff = true
-        end
+        -- if UnitBuff("player",i) and string.find(UnitBuff("player",i),"Interface\\Icons\\Ability_ThunderBolt") then
+            -- We found Seal of Righteousness.
+            -- HasRighteousnessSeal = true
+        -- end
         --Do we have Blessing of Might up ?
-        if UnitBuff("player",i) and string.find(UnitBuff("player",i),"Interface\\Icons\\Spell_Holy_FistOfJustice") then
-            -- Vi fandt Blessing of Might
-            HasMightBuff = true
+        -- if UnitBuff("player",i) and string.find(UnitBuff("player",i),"Interface\\Icons\\Spell_Holy_FistOfJustice") then
+            -- We found Blessing of Might
+            -- HasMightBuff = true
+        -- end
+        -- Do we have Seal of Wisdom up ?
+        if UnitBuff("player",i) and string.find(UnitBuff("player",i),"Interface\\Icons\\Spell_Holy_RighteousnessAura") then
+            HasWisdomSeal = true
+        end
+        -- Do we have Blessing of Wisdom up ?
+        if UnitBuff("player",i) and string.find(UnitBuff("player",i),"Interface\\Icons\\Spell_Holy_SealOfWisdom") then
+            HasWisdomBuff = true
         end
     end
     -- We did not find Seal of Righteousness.
-    if (not HasSealBuff) then
+    -- if (not HasRighteousnessSeal) then
         -- Cast Seal of Righteousness
-        CastSpellByName("Seal of Righteousness");
-    end
+        -- CastSpellByName("Seal of Righteousness");
+    -- end
     -- We did not find Blessing of Might.
-    if (not HasMightBuff) then
+    -- if (not HasMightBuff) then
         -- Cast Seal of Righteousness
-        CastSpellByName("Blessing of Might");
+        -- CastSpellByName("Blessing of Might");
+    -- end
+    -- We did not find Seal of Wisdom.
+    if (not HasWisdomSeal) then
+        -- Cast Seal of Righteousness
+        CastSpellByName("Seal of Wisdom");
+    end
+    -- We did not find Blessing of Wisdom.
+    if (not HasWisdomBuff) then
+        -- Cast Blessing of Wisdom
+        CastSpellByName("Blessing of Wisdom");
     end
 
     -- 
