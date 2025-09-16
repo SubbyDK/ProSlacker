@@ -1447,21 +1447,21 @@ end
     local HasWisdomSeal = false
     local HasMightBuff = false
     local HasWisdomBuff = false
-    -- Loop through own buff.
+    -- Loop through our own buffs.
     for i = 1, 64 do
         if UnitBuff("player",i) then
             -- DEFAULT_CHAT_FRAME:AddMessage(UnitBuff("player",i)) -- Keep this line here for when we have to change check for buff.
         end
         --Do we have Seal of Righteousness up ?
-        -- if UnitBuff("player",i) and string.find(UnitBuff("player",i),"Interface\\Icons\\Ability_ThunderBolt") then
+        if UnitBuff("player",i) and string.find(UnitBuff("player",i),"Interface\\Icons\\Ability_ThunderBolt") then
             -- We found Seal of Righteousness.
-            -- HasRighteousnessSeal = true
-        -- end
+            HasRighteousnessSeal = true
+        end
         --Do we have Blessing of Might up ?
-        -- if UnitBuff("player",i) and string.find(UnitBuff("player",i),"Interface\\Icons\\Spell_Holy_FistOfJustice") then
+        if UnitBuff("player",i) and string.find(UnitBuff("player",i),"Interface\\Icons\\Spell_Holy_FistOfJustice") then
             -- We found Blessing of Might
-            -- HasMightBuff = true
-        -- end
+            HasMightBuff = true
+        end
         -- Do we have Seal of Wisdom up ?
         if UnitBuff("player",i) and string.find(UnitBuff("player",i),"Interface\\Icons\\Spell_Holy_RighteousnessAura") then
             HasWisdomSeal = true
@@ -1472,15 +1472,15 @@ end
         end
     end
     -- We did not find Seal of Righteousness.
-    -- if (not HasRighteousnessSeal) then
+    if (not HasRighteousnessSeal) then
         -- Cast Seal of Righteousness
         -- CastSpellByName("Seal of Righteousness");
-    -- end
+    end
     -- We did not find Blessing of Might.
-    -- if (not HasMightBuff) then
+    if (not HasMightBuff) then
         -- Cast Seal of Righteousness
         -- CastSpellByName("Blessing of Might");
-    -- end
+    end
     -- We did not find Seal of Wisdom.
     if (not HasWisdomSeal) then
         -- Cast Seal of Righteousness

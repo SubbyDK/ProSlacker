@@ -1,7 +1,7 @@
 ## Title: ProSlacker
 ## Interface: 11200
 ## Author: Subby
-## Version: 0.6
+## Version: 0.7
 ## DefaultState: enabled
 ## Notes: Will help with a lot of stuff and a lot of checks.
 
@@ -9,3 +9,12 @@
 ## SavedVariablesPerCharacter: ShoppingDB
 
 ProSlacker.lua
+Druid.lua
+Hunter.lua
+Mage.lua
+Paladin.lua
+Priest.lua
+Rogue.lua
+Shaman.lua
+Warrior.lua
+Warlock.lua
