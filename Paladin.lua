@@ -78,9 +78,13 @@ function PalaTank(SelfSeal, SealOnMob)
 
 -- Find the spell id from our spell book.
 function FindSpellId(FindSpellName)
-    for i = 1, 200 do
+    -- Loop through all spells we have in the spell book.
+    for i = 1, 300 do
+        -- Get the name of the spell.
         local SpellName = GetSpellName(i, "bookType")
+        -- Is it the name of the spell we are looking for ?
         if (SpellName == FindSpellName) then
+            -- Return the number of the spell in the spell book.
             return i
         end
     end
