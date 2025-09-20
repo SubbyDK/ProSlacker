@@ -7,6 +7,7 @@
 -- /run -- CastSpellByName("Attack")
 -- /script PalaTank("Righteousness", "Wisdom")
 -- Use: Righteousness - Wisdom - Light - 
+-- First one is what seal you want to have on your self, 2nd is what you want on target.
 
 function PalaTank(SelfSeal, SealOnMob)
 
@@ -90,18 +91,20 @@ function FindSpellId(FindSpellName)
     end
 end
 
-    -- Cast Holy Shield if it's off cooldown.
-    --if (tonumber(FindSpellId("Holy Shield")) > 0) then
+
+
+
+
+    -- Have we learned "Holy Shield" ?
+    if (CheckIfSpellIsKnown("Holy Shield", 0) == true) then
         -- Get the cooldown on the spell from the spell book.
         local SpellCoolDown = GetSpellCooldown(FindSpellId("Holy Shield"), "bookType");
         -- If it's off cooldown, then cast it.
         if (SpellCoolDown == 0) then
             CastSpellByName("Holy Shield");
         end
-    --end
+    end
         
-
-
     -- Check to see if we have to Judge the target to get Wisdome on it.
     if (SealOnMob == "Wisdom") and (TargetHasWisdomSeal == false) and (HasWisdomSeal) then
         CastSpellByName("Judgement");
@@ -116,53 +119,10 @@ end
         CastSpellByName("Judgement");
     end
 
---[[
-
-
-local start, duration, enabled = GetSpellCooldown(SpellId, "bookType");
-if (enabled == 0) then
-    DEFAULT_CHAT_FRAME:AddMessage("Holy Shield is currently active, use it and wait " .. duration .. " seconds for the next one.");
-elseif (start > 0 and duration > 0) then
-    DEFAULT_CHAT_FRAME:AddMessage("Holy Shield is cooling down, wait " .. (start + duration - GetTime()) .. " seconds for the next one.");
-elseif (start == 0) then
-    DEFAULT_CHAT_FRAME:AddMessage("Holy Shield er klar nu.");
-else
-    DEFAULT_CHAT_FRAME:AddMessage("Holy Shield is ready.");
-end
-
-
-for ii = 1, 1000 do
-    local Test = GetSpellCooldown(ii, "bookType")
-    local NaMe = GetSpellName(ii, "bookType")
-    DEFAULT_CHAT_FRAME:AddMessage(NaMe .. " - " .. Test);
-end
-
-
-
-
-    -- We did not find Seal of Righteousness.
-    if (not HasRighteousnessSeal) then
-        -- Cast Seal of Righteousness
-        -- CastSpellByName("Seal of Righteousness");
-    end
-    -- We did not find Blessing of Might.
-    if (not HasMightBuff) then
-        -- Cast Seal of Righteousness
-        -- CastSpellByName("Blessing of Might");
-    end
-    -- We did not find Seal of Wisdom.
-    if (not HasWisdomSeal) then
-        -- Cast Seal of Righteousness
-        CastSpellByName("Seal of Wisdom");
-    end
-    -- We did not find Blessing of Wisdom.
-    if (not HasWisdomBuff) then
-        -- Cast Blessing of Wisdom
-        CastSpellByName("Blessing of Wisdom");
-    end
---]]
     -- 
-    CastSpellByName("Holy Strike");
+    if (CheckIfSpellIsKnown("Holy Strike", 0) == true) then
+        CastSpellByName("Holy Strike");
+    end
 
 end
 

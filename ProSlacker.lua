@@ -346,6 +346,18 @@ local f = CreateFrame("Frame")
     f:RegisterEvent("MERCHANT_CLOSED");
     f:RegisterEvent("ZONE_CHANGED_NEW_AREA");
     f:RegisterEvent("CHAT_MSG_SYSTEM");
+    f:RegisterEvent("CHAT_MSG_PARTY") -- arg1 msg, arg2 player
+    f:RegisterEvent("CHAT_MSG_RAID") -- arg1 msg, arg2 player
+    f:RegisterEvent("CHAT_MSG_RAID_LEADER") -- arg1 msg, arg2 player
+    f:RegisterEvent("CHAT_MSG_RAID_WARNING") -- arg1 msg, arg2 player
+    f:RegisterEvent("CHAT_MSG_SAY") -- arg1 msg, arg2 player
+    f:RegisterEvent("CHAT_MSG_WHISPER") -- arg1 msg, arg2 player
+    f:RegisterEvent("CHAT_MSG_YELL") -- arg1 msg, arg2 player
+    f:RegisterEvent("CHAT_MSG_MONSTER_WHISPER") -- arg1 msg, arg2 player
+    f:RegisterEvent("CHAT_MSG_EMOTE") -- arg1 msg, arg2 player
+    f:RegisterEvent("CHAT_MSG_GUILD") -- arg1 msg, arg2 player
+    f:RegisterEvent("CHAT_MSG_OFFICER") -- arg1 msg, arg2 player
+
 
 -- ====================================================================================================
 -- =                                          Event handler.                                          =
@@ -356,6 +368,10 @@ f:SetScript("OnEvent", function()
     if (event == "ADDON_LOADED") and (arg1 == AddonName) then
         
         f:UnregisterEvent("ADDON_LOADED");
+-- ====================================================================================================
+    -- Fire when we get a chat message.
+    elseif (event == "CHAT_MSG_PARTY") or (event == "CHAT_MSG_RAID") or (event == "CHAT_MSG_RAID_LEADER") or (event == "CHAT_MSG_RAID_WARNING") or (event == "CHAT_MSG_SAY") or (event == "CHAT_MSG_WHISPER") or (event == "CHAT_MSG_YELL") or (event == "CHAT_MSG_MONSTER_WHISPER") or (event == "CHAT_MSG_EMOTE") or (event == "CHAT_MSG_GUILD") or (event == "CHAT_MSG_OFFICER") then
+        CharacterNameSound(arg1, arg2)
 -- ====================================================================================================
     -- Fire when we get a red error message on the screen.
     elseif (event == "UI_ERROR_MESSAGE") then
@@ -437,6 +453,67 @@ f:SetScript("OnUpdate", function()
     end
 
 end)
+
+-- ====================================================================================================
+-- =                        Give a sound when your character name is mentioned                        =
+-- ====================================================================================================
+
+function CharacterNameSound(arg1, arg2)
+    if (arg1) and (arg2) then
+        -- Get our character name.
+        local CharacterName = string.lower(UnitName("player"))
+        -- 
+        if (string.find(string.lower(arg1), CharacterName)) then
+            PlaySoundFile("Interface\\AddOns\\ProSlacker\\Sounds\\Notification.wav");
+        else
+            -- Check that the table is made, if not, then create it.
+            if (not CharacterDB) or (not type(CharacterDB) == "table") then
+                CharacterDB = {}
+            end
+            -- Do we already have the name in the DB ?
+            if (not CharacterDB[CharacterName]) then
+                -- Get player class
+                local _, EnglishClass = UnitClass("player")
+                CharacterDB[CharacterName] = EnglishClass
+            end
+            -- Loop through the CharacterDB to find the name.
+            for DbCharacterName, DbCharacterClass in pairs(CharacterDB) do
+                if (string.find(string.lower(arg1), DbCharacterName)) then
+
+                    -- Make first letter upper case and rest lower case.
+                    local firstLetter, restOfString = string.match(DbCharacterName, "(%a)(.*)")
+                    local capitalizedName = string.upper(firstLetter) .. string.lower(restOfString)
+
+                    -- Get the color of the class.
+                    if (DbCharacterClass == "DRUID") then
+                        capitalizedName = "|cFFFF7C0A" .. capitalizedName .. "|r"
+                    elseif (DbCharacterClass == "HUNTER") then
+                        capitalizedName = "|cFFAAD372" .. capitalizedName .. "|r"
+                    elseif (DbCharacterClass == "MAGE") then
+                        capitalizedName = "|cFF3FC7EB" .. capitalizedName .. "|r"
+                    elseif (DbCharacterClass == "PALADIN") then
+                        capitalizedName = "|cFFF48CBA" .. capitalizedName .. "|r"
+                    elseif (DbCharacterClass == "PRIEST") then
+                        capitalizedName = "|cFFFFFFFF" .. capitalizedName .. "|r"
+                    elseif (DbCharacterClass == "ROGUE") then
+                        capitalizedName = "|cFFFFF468" .. capitalizedName .. "|r"
+                    elseif (DbCharacterClass == "SHAMAN") then
+                        capitalizedName = "|cFF0070DD" .. capitalizedName .. "|r"
+                    elseif (DbCharacterClass == "WARLOCK") then
+                        capitalizedName = "|cFF8788EE" .. capitalizedName .. "|r"
+                    elseif (DbCharacterClass == "WARRIOR") then
+                        capitalizedName = "|cFFC69B6D" .. capitalizedName .. "|r"
+                    else
+                        capitalizedName = capitalizedName
+                    end
+
+                    PlaySoundFile("Interface\\AddOns\\ProSlacker\\Sounds\\Notification.wav");
+                    DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000" .. AddonName .. ":|r " .. capitalizedName .. " was mentioned in chat.");
+                end
+            end
+        end
+    end
+end
 
 -- ====================================================================================================
 -- =                                        Start auto attack.                                        =
