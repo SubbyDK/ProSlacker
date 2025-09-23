@@ -358,7 +358,6 @@ local f = CreateFrame("Frame")
     f:RegisterEvent("CHAT_MSG_GUILD") -- arg1 msg, arg2 player
     f:RegisterEvent("CHAT_MSG_OFFICER") -- arg1 msg, arg2 player
 
-
 -- ====================================================================================================
 -- =                                          Event handler.                                          =
 -- ====================================================================================================
