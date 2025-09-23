@@ -560,6 +560,7 @@ function HerbAndMining()
     local KnowHerbalism = false
     local MiningOn = false
     local HerbalismOn = false
+    local OtherTracking = false
 
     -- Do we know Mining ?
     if (CheckIfSpellIsKnown("Find Minerals", 0) == true) then
@@ -585,21 +586,24 @@ function HerbAndMining()
     if (GetTrackingTexture() == "Interface\\Icons\\INV_Misc_Flower_02") then
         HerbalismOn = true
     else
-        --DEFAULT_CHAT_FRAME:AddMessage(GetTrackingTexture())
+        -- DEFAULT_CHAT_FRAME:AddMessage(GetTrackingTexture())
     end
 
     -- Check if it's something else we are tracking.
+    if (GetTrackingTexture() == "Interface\Icons\Ability_Stealth") or (GetTrackingTexture() == "Interface\\Icons\\Spell_Frost_SummonWaterElemental") or (GetTrackingTexture() == "Interface\\Icons\\Ability_Tracking") or (GetTrackingTexture() == "Interface\\Icons\\Spell_Shadow_DarkSummoning") or (GetTrackingTexture() == "Interface\\Icons\\Spell_Holy_PrayerOfHealing") then
+        OtherTracking = true
+    end
 
     -- Inform that we are not tracking anything.
-    if (KnowMining == true) and (KnowHerbalism == true) then
+    if (KnowMining == true) and (KnowHerbalism == true) and (OtherTracking == false) then
         if (MiningOn == false) and (HerbalismOn == false) then
             DEFAULT_CHAT_FRAME:AddMessage("|cffff0000" .. "Find Minerals or Find Herbs are not enabled." .. "|r")
         end
-    elseif (KnowMining == true) and (KnowHerbalism == false) then
+    elseif (KnowMining == true) and (KnowHerbalism == false) and (OtherTracking == false) then
         if (MiningOn == false) then
             DEFAULT_CHAT_FRAME:AddMessage("|cffff0000" .. "Find Minerals are not enabled." .. "|r")
         end
-    elseif (KnowMining == false) and (KnowHerbalism == true) then
+    elseif (KnowMining == false) and (KnowHerbalism == true) and (OtherTracking == false) then
         if (HerbalismOn == false) then
             DEFAULT_CHAT_FRAME:AddMessage("|cffff0000" .. "Find Herbs are not enabled." .. "|r")
         end
